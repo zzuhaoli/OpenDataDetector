@@ -1,20 +1,21 @@
-// This file is part of the Acts project.
+// Open Data Dector project
 //
-// Copyright (C) 2019 CERN for the benefit of the Acts project
+// (c) 2021 CERN for the benefit of the ODD project
 //
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Mozilla Public License Version 2.0
 
 #include "ODDModuleHelper.hpp"
 
+#ifdef ODD_ACTS_EXTENSION
 #include "Acts/Plugins/DD4hep/ActsExtension.hpp"
+#endif
 
 using namespace std;
 using namespace dd4hep;
 
 std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
-    Detector& oddd, SensitiveDetector& sens, const xml_comp_t& x_module) {
+    Detector &oddd, SensitiveDetector &sens, const xml_comp_t &x_module)
+{
   // The Module envelope volume
   Assembly moduleAssembly("module");
   // Visualization
@@ -28,7 +29,8 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
   unsigned int sensorNum = 0;
 
   for (xml_coll_t comp(x_module, _U(module_component)); comp;
-       ++comp, ++compNum) {
+       ++comp, ++compNum)
+  {
     xml_comp_t x_comp = comp;
 
     // create the component volume
@@ -43,7 +45,8 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
     componentVolume.setVisAttributes(oddd, x_comp.visStr());
 
     // Place carbon foam structure
-    if (x_comp.hasChild(_U(subtraction)) and x_comp.hasChild(_U(tube))) {
+    if (x_comp.hasChild(_U(subtraction)) and x_comp.hasChild(_U(tube)))
+    {
       xml_comp_t x_sub = x_comp.child(_U(subtraction));
       xml_comp_t x_tubs = x_sub.child(_U(tubs));
       xml_comp_t x_pipe = x_comp.child(_U(tube));
@@ -86,7 +89,8 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
             Position(x_comp.x_offset(), x_comp.y_offset(), x_comp.z_offset())));
 
     // Deal with the sensitive sensor
-    if (x_comp.isSensitive()) {
+    if (x_comp.isSensitive())
+    {
       componentVolume.setSensitiveDetector(sens);
       placedComponent.addPhysVolID("sensor", sensorNum++);
 
@@ -95,12 +99,14 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
       DetElement sensorElement(moduleElement, sensorName, sensorNum);
       sensorElement.setPlacement(placedComponent);
 
+#ifdef ODD_ACTS_EXTENSION
       // Add the sensor extension
-      Acts::ActsExtension* sensorExtension = new Acts::ActsExtension();
+      Acts::ActsExtension *sensorExtension = new Acts::ActsExtension();
       sensorExtension->addType("sensor", "detector");
       sensorExtension->addType("axes", "definitions", "XZY");
       // Set the extension
       sensorElement.addExtension<Acts::ActsExtension>(sensorExtension);
+#endif
     }
   }
 
@@ -109,8 +115,9 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
 }
 
 std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
-    Detector& oddd, SensitiveDetector& sens, const xml_comp_t& x_module,
-    double& ylength) {
+    Detector &oddd, SensitiveDetector &sens, const xml_comp_t &x_module,
+    double &ylength)
+{
   // The Module envelope volume
   Assembly moduleAssembly("module");
   // Visualization
@@ -124,7 +131,8 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
   unsigned int sensorNum = 0;
 
   for (xml_coll_t comp(x_module, _U(module_component)); comp;
-       ++comp, ++compNum) {
+       ++comp, ++compNum)
+  {
     xml_comp_t x_comp = comp;
 
     // Component volume
@@ -135,7 +143,8 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
                            oddd.material(x_comp.materialStr()));
 
     // Place carbon foam structure
-    if (x_comp.hasChild(_U(subtraction)) and x_comp.hasChild(_U(tube))) {
+    if (x_comp.hasChild(_U(subtraction)) and x_comp.hasChild(_U(tube)))
+    {
       xml_comp_t x_sub = x_comp.child(_U(subtraction));
       xml_comp_t x_tubs = x_sub.child(_U(tubs));
       xml_comp_t x_pipe = x_comp.child(_U(tube));
@@ -191,7 +200,8 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
             Position(x_comp.x_offset(), x_comp.y_offset(), x_comp.z_offset())));
 
     // Deal with the sensitive sensor
-    if (x_comp.isSensitive()) {
+    if (x_comp.isSensitive())
+    {
       componentVolume.setSensitiveDetector(sens);
       placedComponent.addPhysVolID("sensor", sensorNum++);
 
@@ -200,12 +210,14 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
       DetElement sensorElement(moduleElement, sensorName, sensorNum);
       sensorElement.setPlacement(placedComponent);
 
+#ifdef ODD_ACTS_EXTENSION
       // Add the sensor extension
-      Acts::ActsExtension* sensorExtension = new Acts::ActsExtension();
+      Acts::ActsExtension *sensorExtension = new Acts::ActsExtension();
       sensorExtension->addType("sensor", "detector");
       sensorExtension->addType("axes", "definitions", "XYZ");
       // Set the extension
       sensorElement.addExtension<Acts::ActsExtension>(sensorExtension);
+#endif
     }
   }
 
