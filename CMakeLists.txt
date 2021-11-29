@@ -17,12 +17,5 @@ find_package(DD4hep 1.11 REQUIRED CONFIG COMPONENTS DDCore DDDetectors)
 # Switch the Acts extension on
 option(ODD_ACTS_EXTENSION "Build within an ACTS context" OFF)
 
-# the `<project_name>_VERSION` variables set by `setup(... VERSION ...)` have
-# only local scope, i.e. they are not accessible her for dependencies added
-# via `add_subdirectory`. this overrides the `project(...)` funcion for
-# sub-projects such that the resulting `<project_name>_VERSION` has
-# global scope and is accessible within the main project later on.
-cmake_policy(SET CMP0048 NEW)
-
 # Add the main factory 
 add_subdirectory(factory)
