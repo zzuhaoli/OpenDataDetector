@@ -1,38 +1,60 @@
-// This file is part of the Acts project.
-//
-// Copyright (C) 2019 CERN for the benefit of the Acts project
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// Open Data Dector project
+//
+// (c) 2021 CERN for the benefit of the ODD project
+//
+// Mozilla Public License Version 2.0
+
+#ifdef ODD_ACTS_EXTENSION
 #include "Acts/Plugins/DD4hep/ActsExtension.hpp"
 #include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
+#endif
 
 #include "DD4hep/DetFactoryHelper.h"
 #include "ODDModuleHelper.hpp"
 #include "ODDServiceHelper.hpp"
 
+#include <vector>
+
 using namespace std;
 using namespace dd4hep;
 
-static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
+/// Standard create_element(...) DD4hep method for Strip endcaps
+///
+/// This can build long/short strip endcaps for the Open Data Detector,
+/// allowing a variable number of endcap discs that consist of a
+/// variable number of rings each.
+///
+/// It supports double (with stereo angle) and single sided modules,
+/// the latter are assumed to be trapezoidal.
+///
+/// @param oddd the detector to which this is addedded
+/// @param xml the input xml element
+/// @param sens the sensitive detector descrition
+///
+/// @return a reference counted DetElement
+static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
+{
   xml_det_t x_det = xml;
   string detName = x_det.nameStr();
 
   // Make DetElement
   DetElement endcapDetector(detName, x_det.id());
 
+#ifdef ODD_ACTS_EXTENSION
   // Add Extension to DetElement for the RecoGeometry
-  Acts::ActsExtension* endcapExtension = new Acts::ActsExtension();
+  Acts::ActsExtension *endcapExtension = new Acts::ActsExtension();
   endcapExtension->addType("endcap", "detector");
+
   // Add the volume boundary material if configured
-  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat) {
+  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat)
+  {
     xml_comp_t x_boundary_material = bmat;
     xmlToProtoSurfaceMaterial(x_boundary_material, *endcapExtension,
                               "boundary_material");
   }
   endcapDetector.addExtension<Acts::ActsExtension>(endcapExtension);
+#endif
 
   // Make Volume
   dd4hep::xml::Dimension x_det_dim(x_det.dimensions());
@@ -49,7 +71,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
 
   // build the ring templates
   size_t ringNum = 0;
-  for (xml_coll_t ring(x_det, _U(ring)); ring; ++ring, ++ringNum) {
+  for (xml_coll_t ring(x_det, _U(ring)); ring; ++ring, ++ringNum)
+  {
     xml_comp_t x_ring = ring;
 
     string ringName = "Ring" + std::to_string(ringNum);
@@ -58,19 +81,22 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     // DetElement tree
     DetElement ringElement(ringName, ringNum);
 
-    if (x_ring.hasChild(_U(module))) {
+    // Build the module
+    if (x_ring.hasChild(_U(module)))
+    {
       xml_comp_t x_module = x_ring.child(_U(module));
       auto module =
           ODDModuleHelper::assembleTrapezoidalModule(oddd, sens, x_module);
 
-      // place the modules
+      // Place the modules
       unsigned int nPhi = x_ring.nphi();
       double phiStep = 2 * M_PI / nPhi;
       double phi0 = x_ring.phi0();
       double r = x_ring.r();
       double zgap = x_ring.gap();
 
-      for (unsigned int modNum = 0; modNum < nPhi; ++modNum) {
+      for (unsigned int modNum = 0; modNum < nPhi; ++modNum)
+      {
         // The module name
         string moduleName = _toString((int)modNum, "module%d");
 
@@ -93,7 +119,7 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
             module.first,
             Transform3D(
                 RotationX(angX) * RotationY(angY),
-                trans));  // RotationZ(phi + 1.5 * M_PI) * RotationY(flip)
+                trans)); // RotationZ(phi + 1.5 * M_PI) * RotationY(flip)
         placedModule.addPhysVolID("module", modNum);
         // Clone the detector element
         auto moduleElement = module.second.clone(moduleName, modNum);
@@ -106,7 +132,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
       diskElementTemplate.add(ringElement);
 
       size_t supportNum = 0;
-      for (xml_coll_t sup(x_ring, _U(support)); sup; ++sup, ++supportNum) {
+      for (xml_coll_t sup(x_ring, _U(support)); sup; ++sup, ++supportNum)
+      {
         xml_comp_t x_support = sup;
         // Create the volume of the support structure
         string supportName = _toString((int)supportNum, "RingSupport%d");
@@ -134,7 +161,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
   // Loop over the layers and place the disk, remember the z positions
   std::vector<double> endcapZ;
   size_t layNum = 0;
-  for (xml_coll_t lay(xml, _U(layer)); lay; ++lay, ++layNum) {
+  for (xml_coll_t lay(xml, _U(layer)); lay; ++lay, ++layNum)
+  {
     xml_comp_t x_layer = lay;
     // The Layer envelope volume
     string layerName = detName + std::to_string(layNum);
@@ -162,9 +190,10 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     placedLayer.addPhysVolID("layer", layNum);
     endcapZ.push_back(zeff);
 
+#ifdef ODD_ACTS_EXTENSION
     // Place the layer with appropriate Acts::Extension
     // Configure the ACTS extension
-    Acts::ActsExtension* layerExtension = new Acts::ActsExtension();
+    Acts::ActsExtension *layerExtension = new Acts::ActsExtension();
     layerExtension->addType("sensitive disk", "layer");
     layerExtension->addValue(25, "r_min", "envelope");
     layerExtension->addValue(10, "r_max", "envelope");
@@ -172,7 +201,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     layerExtension->addValue(10, "z_max", "envelope");
 
     // Check if the disk has a surface binning instruction
-    if (x_layer.hasChild(_Unicode(surface_binning))) {
+    if (x_layer.hasChild(_Unicode(surface_binning)))
+    {
       xml_comp_t sfBinning = x_layer.child(_Unicode(surface_binning));
       layerExtension->addValue(sfBinning.attr<int>("nr"), "n_r",
                                "surface_binning");
@@ -180,30 +210,36 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
                                "surface_binning");
     }
 
-    layerElement.addExtension<Acts::ActsExtension>(layerExtension);
-
     // Add the proto layer material
-    for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat) {
+    for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat)
+    {
       xml_comp_t x_layer_material = lmat;
       xmlToProtoSurfaceMaterial(x_layer_material, *layerExtension,
                                 "layer_material");
     }
+    layerElement.addExtension<Acts::ActsExtension>(layerExtension);
+
+#endif
+
     // Finish up the DetElement tree
     layerElement.setPlacement(placedLayer);
     endcapDetector.add(layerElement);
   }
 
-  if (x_det.hasChild(_Unicode(services))) {
+  if (x_det.hasChild(_Unicode(services)))
+  {
     // Grab the services - cables
     xml_comp_t x_services = x_det.child(_Unicode(services));
     for (xml_coll_t crout(x_services, _Unicode(cable_routing)); crout;
-         ++crout) {
+         ++crout)
+    {
       xml_comp_t x_cable_routing = crout;
       buildEndcapRouting(oddd, endcapVolume, x_cable_routing, endcapZ);
     }
     // Grab for services - cooling
     for (xml_coll_t crout(x_services, _Unicode(cooling_routing)); crout;
-         ++crout) {
+         ++crout)
+    {
       xml_comp_t x_cooling_routing = crout;
       buildEndcapRouting(oddd, endcapVolume, x_cooling_routing, endcapZ);
     }

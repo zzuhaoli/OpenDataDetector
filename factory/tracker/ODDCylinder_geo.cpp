@@ -1,21 +1,29 @@
-// This file is part of the Acts project.
+// Open Data Dector project
 //
-// Copyright (C) 2019 CERN for the benefit of the Acts project
+// (c) 2021 CERN for the benefit of the ODD project
 //
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Mozilla Public License Version 2.0
 
+#ifdef ODD_ACTS_EXTENSION
 #include "Acts/Plugins/DD4hep/ActsExtension.hpp"
 #include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
+#endif
 
 #include "DD4hep/DetFactoryHelper.h"
 
 using namespace std;
 using namespace dd4hep;
 
-static Ref_t create_element(Detector& oddd, xml_h xml,
-                            SensitiveDetector /*sens*/) {
+/// Standard create_element(...) create a simple cylinder
+///
+/// @param oddd the detector to which this is addedded
+/// @param xml the input xml element
+/// @param sens is ignored
+///
+/// @return a reference counted DetElement
+static Ref_t create_element(Detector &oddd, xml_h xml,
+                            SensitiveDetector /*sens*/)
+{
   xml_det_t x_det = xml;
   string detName = x_det.nameStr();
 
@@ -25,11 +33,13 @@ static Ref_t create_element(Detector& oddd, xml_h xml,
   // Make DetElement
   DetElement cylinderElement(detName, x_det.id());
 
+#ifdef ODD_ACTS_EXTENSION
   // add Extension to Detlement for the RecoGeometry
-  Acts::ActsExtension* pcExtension = new Acts::ActsExtension();
+  Acts::ActsExtension *pcExtension = new Acts::ActsExtension();
 
   // Add the proto boundary material
-  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat) {
+  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat)
+  {
     xml_comp_t x_boundary_material = bmat;
     xmlToProtoSurfaceMaterial(x_boundary_material, *pcExtension,
                               "boundary_material");
@@ -37,16 +47,19 @@ static Ref_t create_element(Detector& oddd, xml_h xml,
 
   bool isBeamPipe = x_det.hasChild(_U(beampipe));
   pcExtension->addType("passive cylinder", "layer");
-  if (isBeamPipe) {
+  if (isBeamPipe)
+  {
     pcExtension->addType("beampipe", "layer");
   }
   // Add the proto layer material
-  for (xml_coll_t lmat(x_det_tubs, _Unicode(layer_material)); lmat; ++lmat) {
+  for (xml_coll_t lmat(x_det_tubs, _Unicode(layer_material)); lmat; ++lmat)
+  {
     xml_comp_t x_layer_material = lmat;
     xmlToProtoSurfaceMaterial(x_layer_material, *pcExtension, "layer_material");
   }
 
   cylinderElement.addExtension<Acts::ActsExtension>(pcExtension);
+#endif
 
   string shapeName = x_det_tubs.nameStr();
   Tube tubeShape(shapeName, x_det_tubs.rmin(), x_det_tubs.rmax(),

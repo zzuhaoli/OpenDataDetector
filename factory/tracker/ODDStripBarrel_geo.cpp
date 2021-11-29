@@ -1,38 +1,58 @@
-// This file is part of the Acts project.
+// Open Data Dector project
 //
-// Copyright (C) 2019 CERN for the benefit of the Acts project
+// (c) 2021 CERN for the benefit of the ODD project
 //
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Mozilla Public License Version 2.0
 
+#ifdef ODD_ACTS_EXTENSION
 #include "Acts/Plugins/DD4hep/ActsExtension.hpp"
 #include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
+#endif
 
-#include "DD4hep/DetFactoryHelper.h"
 #include "ODDModuleHelper.hpp"
 #include "ODDServiceHelper.hpp"
+
+#include "DD4hep/DetFactoryHelper.h"
+
+#include <vector>
 
 using namespace std;
 using namespace dd4hep;
 
-static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
+/// Standard create_element(...) DD4hep method for Strip barrel
+///
+/// This can build long/short strip barrels for the Open Data Detector,
+/// allowing a variable number of cylindrical layers.
+///
+/// It supports double (with stereo angle) and single sided modules,
+/// the latter are assumed to be rectangular.
+///
+/// @param oddd the detector to which this is addedded
+/// @param xml the input xml element
+/// @param sens the sensitive detector descrition
+///
+/// @return a reference counted DetElement
+static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
+{
   xml_det_t x_det = xml;
   string detName = x_det.nameStr();
 
   // Make DetElement
   DetElement barrelDetector(detName, x_det.id());
 
+#ifdef ODD_ACTS_EXTENSION
   // Add Extension to DetElement for the RecoGeometry
-  Acts::ActsExtension* barrelExtension = new Acts::ActsExtension();
+  Acts::ActsExtension *barrelExtension = new Acts::ActsExtension();
   barrelExtension->addType("barrel", "detector");
   // Add the volume boundary material if configured
-  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat) {
+  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat)
+  {
     xml_comp_t x_boundary_material = bmat;
     xmlToProtoSurfaceMaterial(x_boundary_material, *barrelExtension,
                               "boundary_material");
   }
   barrelDetector.addExtension<Acts::ActsExtension>(barrelExtension);
+#endif
 
   // Make Volume
   dd4hep::xml::Dimension x_det_dim(x_det.dimensions());
@@ -64,10 +84,12 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
   double staveHlength = ymin + 0.5 * length;
 
   // Loop over the modules and place them in the stave
-  for (unsigned int moduleNum = 0; moduleNum < nModules; ++moduleNum) {
+  for (unsigned int moduleNum = 0; moduleNum < nModules; ++moduleNum)
+  {
     double positionY = -ymin + moduleNum * ystep;
     // Place the cable bundle, one per stave
-    if (x_stave.hasChild(_U(eltube))) {
+    if (x_stave.hasChild(_U(eltube)))
+    {
       // Retrieve cable parameters
       xml_comp_t x_cable = x_stave.child(_U(eltube));
 
@@ -109,7 +131,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
 
   // Loop over the layers to build staves
   size_t layerNum = 0;
-  for (xml_coll_t lay(xml, _U(layer)); lay; ++lay, ++layerNum) {
+  for (xml_coll_t lay(xml, _U(layer)); lay; ++lay, ++layerNum)
+  {
     xml_comp_t x_layer = lay;
 
     string layerName = detName + std::to_string(layerNum);
@@ -133,7 +156,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     layerR.push_back(r);
 
     // Loop over the staves and place them
-    for (unsigned int staveNum = 0; staveNum < nStaves; ++staveNum) {
+    for (unsigned int staveNum = 0; staveNum < nStaves; ++staveNum)
+    {
       string staveName = _toString((int)staveNum, "stave%d");
       // position of the stave
       double phi = phi0 + staveNum * phiStep;
@@ -158,41 +182,49 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     std::vector<double> dummyR;
     buildSupportCylinder(oddd, barrelVolume, x_layer, dummyR);
 
+#ifdef ODD_ACTS_EXTENSION
     // Place the layer with appropriate Acts::Extension
     // Configure the ACTS extension
-    Acts::ActsExtension* layerExtension = new Acts::ActsExtension();
+    Acts::ActsExtension *layerExtension = new Acts::ActsExtension();
     layerExtension->addType("sensitive cylinder", "layer");
     layerExtension->addValue(10., "r_min", "envelope");
     layerExtension->addValue(25., "r_max", "envelope");
     layerExtension->addValue(10., "z_min", "envelope");
     layerExtension->addValue(10., "z_max", "envelope");
-    layerElement.addExtension<Acts::ActsExtension>(layerExtension);
+
     // Add the proto layer material
-    for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat) {
+    for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat)
+    {
       xml_comp_t x_layer_material = lmat;
       xmlToProtoSurfaceMaterial(x_layer_material, *layerExtension,
                                 "layer_material");
     }
+    layerElement.addExtension<Acts::ActsExtension>(layerExtension);
+#endif
+
     PlacedVolume placedLayer = barrelVolume.placeVolume(layerVolume);
     placedLayer.addPhysVolID("layer", layerNum);
 
     // Assign layer DetElement to layer volume
     layerElement.setPlacement(placedLayer);
 
-  }  // loop over layers
+  } // loop over layers
 
   // Place the support rails
   buildSupportCylinder(oddd, barrelVolume, x_det, layerR);
 
   // Route the services out on both sides
-  if (x_det.hasChild(_Unicode(services))) {
+  if (x_det.hasChild(_Unicode(services)))
+  {
     // Grab the services
     xml_comp_t x_services = x_det.child(_Unicode(services));
-    if (x_services.hasChild(_Unicode(cable_routing))) {
+    if (x_services.hasChild(_Unicode(cable_routing)))
+    {
       xml_comp_t x_cable_routing = x_services.child(_Unicode(cable_routing));
       buildBarrelRouting(oddd, barrelVolume, x_cable_routing, layerR);
     }
-    if (x_services.hasChild(_Unicode(cooling_routing))) {
+    if (x_services.hasChild(_Unicode(cooling_routing)))
+    {
       xml_comp_t x_cooling_routing =
           x_services.child(_Unicode(cooling_routing));
       buildBarrelRouting(oddd, barrelVolume, x_cooling_routing, layerR);

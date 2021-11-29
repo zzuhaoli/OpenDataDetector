@@ -1,28 +1,40 @@
-// This file is part of the Acts project.
+// Open Data Dector project
 //
-// Copyright (C) 2019 CERN for the benefit of the Acts project
+// (c) 2021 CERN for the benefit of the ODD project
 //
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Mozilla Public License Version 2.0
 
+#ifdef ODD_ACTS_EXTENSION
 #include "Acts/Plugins/DD4hep/ActsExtension.hpp"
 #include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
+#endif
 
 #include "DD4hep/DetFactoryHelper.h"
 #include "ODDModuleHelper.hpp"
 #include "ODDServiceHelper.hpp"
 
+#include <vector>
+
 using namespace std;
 using namespace dd4hep;
 
-static void completeStaveStructure(Detector& oddd, xml_comp_t& x_stave,
-                                   Assembly& staveAssembly, double staveHlength,
-                                   double ylength) {
+/// Helper method to complete the stave structure with
+/// cooling, support material, etc.
+///
+/// @param oddd the detector instance
+/// @param x_stave the stave xml component
+/// @param staveAssembly is the assembly to be completed
+/// @param staveHlength the half length of the stave structure
+/// @param ylength the length in y-direction
+static void completeStaveStructure(Detector &oddd, xml_comp_t &x_stave,
+                                   Assembly &staveAssembly, double staveHlength,
+                                   double ylength)
+{
   unsigned int nModules = x_stave.nmodules();
 
   // Place carbon foam structure
-  if (x_stave.hasChild(_U(subtraction)) and x_stave.hasChild(_U(tube))) {
+  if (x_stave.hasChild(_U(subtraction)) and x_stave.hasChild(_U(tube)))
+  {
     xml_comp_t x_sub = x_stave.child(_U(subtraction));
     xml_comp_t x_trd = x_sub.child(_U(trd));
     xml_comp_t x_tubs = x_sub.child(_U(tubs));
@@ -64,10 +76,12 @@ static void completeStaveStructure(Detector& oddd, xml_comp_t& x_stave,
 
     xml_comp_t x_cable = x_stave.child(_U(eltube));
     // Place the support cables for the modules
-    for (unsigned int modCable = 0; modCable < 0.5 * nModules; ++modCable) {
+    for (unsigned int modCable = 0; modCable < 0.5 * nModules; ++modCable)
+    {
       double cableLength = staveHlength - modCable * ylength;
 
-      for (int side = -1; side < 2; side += 2) {
+      for (int side = -1; side < 2; side += 2)
+      {
         Tube cable(x_cable.rmin(), x_cable.rmax(), 0.5 * cableLength);
         // Create the cable volume
         Volume cableVolume("Cable", cable,
@@ -88,23 +102,34 @@ static void completeStaveStructure(Detector& oddd, xml_comp_t& x_stave,
   }
 }
 
-static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
+/// Standard create_element(...) DD4hep method for Pixel barrel
+///
+/// @param oddd the detector to which this is addedded
+/// @param xml the input xml element
+/// @param sens the sensitive detector descrition
+///
+/// @return a reference counted DetElement
+static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
+{
   xml_det_t x_det = xml;
   string detName = x_det.nameStr();
 
   // Make DetElement
   DetElement barrelDetector(detName, x_det.id());
 
+#ifdef ODD_ACTS_EXTENSION
   // Add Extension to DetElement for the RecoGeometry
-  Acts::ActsExtension* barrelExtension = new Acts::ActsExtension();
+  Acts::ActsExtension *barrelExtension = new Acts::ActsExtension();
   barrelExtension->addType("barrel", "detector");
   // Add the volume boundary material if configured
-  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat) {
+  for (xml_coll_t bmat(x_det, _Unicode(boundary_material)); bmat; ++bmat)
+  {
     xml_comp_t x_boundary_material = bmat;
     xmlToProtoSurfaceMaterial(x_boundary_material, *barrelExtension,
                               "boundary_material");
   }
   barrelDetector.addExtension<Acts::ActsExtension>(barrelExtension);
+#endif
 
   // Make Volume
   dd4hep::xml::Dimension x_det_dim(x_det.dimensions());
@@ -137,7 +162,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
   double staveHlength = ymin + 0.5 * ylength;
 
   // Loop over the modules and place them in the stave
-  for (unsigned int moduleNum = 0; moduleNum < nModules; ++moduleNum) {
+  for (unsigned int moduleNum = 0; moduleNum < nModules; ++moduleNum)
+  {
     // Place them along local y
     PlacedVolume placedModule = staveAssembly.placeVolume(
         module.first, Position(0., -ymin + moduleNum * ystep, 0.));
@@ -158,7 +184,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
 
   // Loop over the layers to build staves
   size_t layerNum = 0;
-  for (xml_coll_t lay(xml, _U(layer)); lay; ++lay, ++layerNum) {
+  for (xml_coll_t lay(xml, _U(layer)); lay; ++lay, ++layerNum)
+  {
     xml_comp_t x_layer = lay;
 
     // The Layer envelope volume
@@ -182,7 +209,8 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     layerR.push_back(r);
 
     // Loop over the staves and place them
-    for (unsigned int staveNum = 0; staveNum < nStaves; ++staveNum) {
+    for (unsigned int staveNum = 0; staveNum < nStaves; ++staveNum)
+    {
       string staveName = _toString((int)staveNum, "stave%d");
       // position of the stave
       double phi = phi0 + staveNum * phiStep;
@@ -207,24 +235,28 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
     buildSupportCylinder(oddd, layerVolume, x_layer, layerR);
 
     // Cleanup the templates
+    /// @todo check if this is needed
     // dd4hep::detail::destroyHandle(staveElementTemplate);
     // dd4hep::detail::destroyHandle(module.second);
 
+#ifdef ODD_ACTS_EXTENSION
     // Place the layer with appropriate Acts::Extension
     // Configure the ACTS extension
-    Acts::ActsExtension* layerExtension = new Acts::ActsExtension();
+    Acts::ActsExtension *layerExtension = new Acts::ActsExtension();
     layerExtension->addType("sensitive cylinder", "layer");
     layerExtension->addValue(1., "r_min", "envelope");
     layerExtension->addValue(5., "r_max", "envelope");
     layerExtension->addValue(5., "z_min", "envelope");
     layerExtension->addValue(5., "z_max", "envelope");
     // Add the proto layer material
-    for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat) {
+    for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat)
+    {
       xml_comp_t x_layer_material = lmat;
       xmlToProtoSurfaceMaterial(x_layer_material, *layerExtension,
                                 "layer_material");
     }
     layerElement.addExtension<Acts::ActsExtension>(layerExtension);
+#endif
 
     PlacedVolume placedLayer = barrelVolume.placeVolume(layerVolume);
     placedLayer.addPhysVolID("layer", layerNum);
@@ -236,14 +268,17 @@ static Ref_t create_element(Detector& oddd, xml_h xml, SensitiveDetector sens) {
   // Place the additional support cylinders per detector
   buildSupportCylinder(oddd, barrelVolume, x_det, layerR);
 
-  if (x_det.hasChild(_Unicode(services))) {
+  if (x_det.hasChild(_Unicode(services)))
+  {
     // Grab the services
     xml_comp_t x_services = x_det.child(_Unicode(services));
-    if (x_services.hasChild(_Unicode(cable_routing))) {
+    if (x_services.hasChild(_Unicode(cable_routing)))
+    {
       xml_comp_t x_cable_routing = x_services.child(_Unicode(cable_routing));
       buildBarrelRouting(oddd, barrelVolume, x_cable_routing, layerR);
     }
-    if (x_services.hasChild(_Unicode(cooling_routing))) {
+    if (x_services.hasChild(_Unicode(cooling_routing)))
+    {
       xml_comp_t x_cooling_routing =
           x_services.child(_Unicode(cooling_routing));
       buildBarrelRouting(oddd, barrelVolume, x_cooling_routing, layerR);
