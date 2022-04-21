@@ -8,9 +8,9 @@
         <gdmlFile ref="OpenDataMaterials.xml"/>
     </includes>
     
-    <info name="Demonstrator"
-        title="Demonstrator" 
-        author="Andreas.Salzburger@cern.ch" url="" status="test" version="0">
+    <info name="Open Data Detector"
+        title="Open Data Detector" 
+        author="Andreas.Salzburger@cern.ch" url="" status="alpha" version="0">
         <comment>Demonstrator Detector for the acts webpage and documentation</comment>
     </info>
     <define>
@@ -23,6 +23,9 @@
         <constant name="bp_rmin" value="23.6*mm"/>
         <constant name="bp_rmax" value="24.4*mm"/>
         <constant name="bp_length" value="4.0*m"/>
+        <!--The tracker region definition -->
+        <constant name="tracker_region_rmax" value="1.2*m"/>
+        <constant name="tracker_region_zmax" value="4.0*m"/>        
         <!--Dimensions of the Pixel volume & sub volumes -->
         <constant name="pix_env_rmin" value="25.*mm"/>
         <constant name="pix_env_rmax" value="200.*mm"/>
@@ -105,27 +108,27 @@
     <readouts>
         <readout name="PixelBarrelReadout">
             <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
-            <id>system:4,layer:4,stave:8,module:4,sensor:2,x:4,y:4</id>
+            <id>system:4,layer:4,stave:8,module:4,sensor:1,x:24:-12,y:-12</id>
         </readout>
         <readout name="PixelEndcapReadout">
             <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
-            <id>system:4,layer:4,ring:2,module:8,sensor:2,x:4,y:4</id>
+            <id>system:4,layer:4,ring:2,module:8,sensor:2,x:24:-12,y:-12</id>
         </readout>
         <readout name="ShortStripBarrelReadout">
-            <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
-            <id>system:4,layer:4,stave:8,module:8,sensor:2,x:4,y:4</id>
+            <segmentation type="CartesianGridXY" grid_size_x="0.075*mm" grid_size_y="0.5*mm"/>
+            <id>system:4,layer:4,stave:8,module:8,sensor:2,x:32:-12,y:-12</id>
         </readout>
         <readout name="ShortStripEndcapReadout">
-            <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
-            <id>system:4,layer:4,ring:2,module:8,sensor:2,x:4,y:4</id>
+            <segmentation type="CartesianGridXY" grid_size_x="0.075*mm" grid_size_y="0.5*mm"/>
+            <id>system:4,layer:4,ring:2,module:8,sensor:2,x:32:-12,y:-12</id>
         </readout>
         <readout name="LongStripBarrelReadout">
-            <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
-            <id>system:4,layer:4,stave:8,module:8,sensor:4,x:4,y:4</id>
+            <segmentation type="CartesianGridXY" grid_size_x="0.15*mm" grid_size_y="1.5*mm"/>
+            <id>system:4,layer:4,stave:8,module:8,sensor:2,x:32:-12,y:-12</id>
         </readout>>
         <readout name="LongStripEndcapReadout">
-            <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
-            <id>system:4,layer:4,ring:4,module:8,sensor:4,x:4,y:4</id>
+            <segmentation type="CartesianGridXY" grid_size_x="0.15*mm" grid_size_y="1.5*mm"/>
+            <id>system:4,layer:4,ring:4,module:8,sensor:2,x:32:-12,y:-12</id>
         </readout>
     </readouts> 
     <include ref="OpenDataPixels.xml"/>
