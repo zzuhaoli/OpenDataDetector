@@ -91,9 +91,9 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
     // Deal with the sensitive sensor
     if (x_comp.isSensitive())
     {
+      sens.setType("tracker");
       componentVolume.setSensitiveDetector(sens);
       placedComponent.addPhysVolID("sensor", sensorNum++);
-
       // Create the sensor element and place it
       string sensorName = _toString((int)sensorNum, "sensor%d");
       DetElement sensorElement(moduleElement, sensorName, sensorNum);
@@ -202,6 +202,7 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
     // Deal with the sensitive sensor
     if (x_comp.isSensitive())
     {
+      sens.setType("tracker");
       componentVolume.setSensitiveDetector(sens);
       placedComponent.addPhysVolID("sensor", sensorNum++);
 
