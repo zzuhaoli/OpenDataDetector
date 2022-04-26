@@ -1,0 +1,140 @@
+stages:
+  - build
+  - test
+
+default:
+  # image: gitlab-registry.cern.ch/acts/opendatadetector/centos8-base
+  # image: gitlab-registry.cern.ch/acts/opendatadetector/centos8-base:v2
+  # image: ghcr.io/acts-project/ubuntu2004:v15
+  image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2004:v15
+  tags: 
+    - cvmfs
+
+variables:
+  ACTS_VERSION: python-scripts-install
+
+
+# - git clone --depth 1 https://github.com/acts-project/acts.git --branch ${ACTS_VERSION}
+build-acts:
+  stage: build
+  cache:
+    key: "acts_$ACTS_VERSION"
+    policy: pull-push
+    paths: 
+      - acts-install
+  script:
+    - git clone --depth 1 https://github.com/acts-project/acts.git --branch ${ACTS_VERSION}
+    - rm -rf acts/thirdparty/OpenDataDetector
+    - ln -s ../../ acts/thirdparty/OpenDataDetector
+    - > 
+      test -d acts-install ||
+      (cmake -S acts -B acts-build -GNinja
+      -DCMAKE_BUILD_TYPE=Release 
+      -DCMAKE_CXX_STANDARD=17 
+      -DCMAKE_INSTALL_PREFIX=$PWD/acts-install
+      -DACTS_BUILD_EXAMPLES=ON
+      -DACTS_BUILD_EXAMPLES_DD4HEP=ON
+      -DACTS_BUILD_EXAMPLES_GEANT4=ON
+      -DACTS_BUILD_PLUGIN_DD4HEP=ON
+      -DACTS_BUILD_ANALYSIS_APPS=ON
+      -DACTS_BUILD_EXAMPLES_PYTHON_BINDINGS=ON
+      && cmake --build acts-build --
+      && cmake --install acts-build)
+
+build-odd:
+  stage: build
+  needs: [build-acts]
+  image: debian:bullseye-slim
+  cache:
+    - key: "acts_$ACTS_VERSION"
+      policy: pull
+      paths: 
+        - acts-install
+    # not strictly necessary right now since no extra build
+    # - key: "acts_${ACTS_VERSION}_odd"
+      # policy: pull-push
+      # paths: 
+        # - acts-install
+  script:
+    echo "hi"
+    # - source /opt/lcg_view/setup.sh
+    # - source acts-install/bin/this_acts.sh
+    # - source acts-install/python/setup.sh
+
+run-full-chain:
+  stage: test
+  needs: [build-odd]
+  cache:
+    key: "acts_${ACTS_VERSION}"
+    policy: pull
+    paths: 
+      - acts-install
+  artifacts:
+    paths:
+      - full_chain
+    expire_in: 1 month
+    when: always
+  script:
+    - source acts-install/bin/this_acts.sh
+    - source acts-install/python/setup.sh
+    - mkdir full_chain
+    - ci/full_chain_odd.py -o output -n 100000 2>&1 > full_chain/output.log
+    - >
+      cp output/performance_ckf.root full_chain
+      && cp output/performance_seeding_hists.root full_chain
+    - pip install -r ci/requirements.txt
+    - source /usr/local/bin/thisroot.sh
+    - >
+      histcmp 
+      --label-reference $(cat ci/reference/commit.txt) 
+      --label-monitored $CI_COMMIT_SHORT_SHA
+      --title "ODD full chain"
+      -o full_chain/full_chain.html
+      full_chain/performance_ckf.root
+      ci/reference/performance_ckf.root
+
+run-material-composition:
+  stage: test
+  needs: [build-odd]
+  cache:
+    key: "acts_${ACTS_VERSION}"
+    policy: pull
+    paths: 
+      - acts-install
+  artifacts:
+    paths:
+      - plots
+    expire_in: 1 month
+    when: always
+  script:
+    - source acts-install/bin/this_acts.sh
+    - source acts-install/python/setup.sh
+    - ci/download_geant4_data.sh
+    - source /usr/local/bin/geant4.sh
+    - ci/run_material_recording.py -o g4 -n 100000
+    - hadd g4/geant4_material_tracks.root g4/geant4_material_tracks_*.root
+    - mkdir plots
+    - ci/material_composition.sh g4/geant4_material_tracks.root plots/material_composition.root
+    - pip install -r ci/requirements.txt
+    - source /usr/local/bin/thisroot.sh
+    - ci/make_material_plots.py plots/material_composition.root plots
+    - >
+      histcmp 
+      --label-reference $(cat ci/reference/commit.txt) 
+      --label-monitored $CI_COMMIT_SHORT_SHA
+      --title "ODD material composition"
+      -o plots/material.html
+      plots/material_composition.root
+      ci/reference/material_composition.root
+
+run-ddsim:
+  stage: test
+  needs: []
+  script:
+    - ci/download_geant4_data.sh
+    - mkdir build
+    - cmake -S . -B build -GNinja
+    - cmake --build build
+    - source /usr/local/bin/thisdd4hep.sh
+    - export LD_LIBRARY_PATH=$PWD/build/factory:$LD_LIBRARY_PATH
+    - python3 $(which ddsim) --enableGun --numberOfEvents 100 --gun.thetaMin 0.1415 --gun.thetaMax 3.0  --gun.distribution uniform --compactFile xml/OpenDataDetector.xml --outputFile ddsim.root
