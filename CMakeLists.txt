@@ -19,3 +19,6 @@ option(ODD_ACTS_EXTENSION "Build within an ACTS context" OFF)
 
 # Add the main factory 
 add_subdirectory(factory)
+
+# Install the compact files
+install(DIRECTORY xml DESTINATION share/OpenDataDetector)
