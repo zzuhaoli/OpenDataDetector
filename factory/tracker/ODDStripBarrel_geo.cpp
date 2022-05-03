@@ -4,10 +4,8 @@
 //
 // Mozilla Public License Version 2.0
 
-#ifdef ODD_ACTS_EXTENSION
-#include "Acts/Plugins/DD4hep/ActsExtension.hpp"
-#include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
-#endif
+#include "ActsDD4hep/ActsExtension.hpp"
+#include "ActsDD4hep/ConvertMaterial.hpp"
 
 #include "ODDModuleHelper.hpp"
 #include "ODDServiceHelper.hpp"
@@ -40,7 +38,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
   // Make DetElement
   DetElement barrelDetector(detName, x_det.id());
 
-#ifdef ODD_ACTS_EXTENSION
   // Add Extension to DetElement for the RecoGeometry
   Acts::ActsExtension *barrelExtension = new Acts::ActsExtension();
   barrelExtension->addType("barrel", "detector");
@@ -52,7 +49,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
                               "boundary_material");
   }
   barrelDetector.addExtension<Acts::ActsExtension>(barrelExtension);
-#endif
 
   // Make Volume
   dd4hep::xml::Dimension x_det_dim(x_det.dimensions());
@@ -182,7 +178,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
     std::vector<double> dummyR;
     buildSupportCylinder(oddd, barrelVolume, x_layer, dummyR);
 
-#ifdef ODD_ACTS_EXTENSION
     // Place the layer with appropriate Acts::Extension
     // Configure the ACTS extension
     Acts::ActsExtension *layerExtension = new Acts::ActsExtension();
@@ -200,7 +195,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
                                 "layer_material");
     }
     layerElement.addExtension<Acts::ActsExtension>(layerExtension);
-#endif
 
     PlacedVolume placedLayer = barrelVolume.placeVolume(layerVolume);
     placedLayer.addPhysVolID("layer", layerNum);

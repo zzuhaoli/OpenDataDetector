@@ -4,10 +4,8 @@
 //
 // Mozilla Public License Version 2.0
 
-#ifdef ODD_ACTS_EXTENSION
-#include "Acts/Plugins/DD4hep/ActsExtension.hpp"
-#include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
-#endif
+#include "ActsDD4hep/ActsExtension.hpp"
+#include "ActsDD4hep/ConvertMaterial.hpp"
 
 #include "DD4hep/DetFactoryHelper.h"
 
@@ -33,7 +31,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
   // Make DetElement
   DetElement cylinderElement(detName, x_det.id());
 
-#ifdef ODD_ACTS_EXTENSION
   // add Extension to Detlement for the RecoGeometry
   Acts::ActsExtension *pcExtension = new Acts::ActsExtension();
 
@@ -59,7 +56,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
   }
 
   cylinderElement.addExtension<Acts::ActsExtension>(pcExtension);
-#endif
 
   string shapeName = x_det_tubs.nameStr();
   Tube tubeShape(shapeName, x_det_tubs.rmin(), x_det_tubs.rmax(),
