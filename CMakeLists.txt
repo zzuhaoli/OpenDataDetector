@@ -14,11 +14,25 @@ include( GNUInstallDirs )
 # Find the DD4Hep package with corresponding library
 find_package(DD4hep 1.11 REQUIRED CONFIG COMPONENTS DDCore DDDetectors)
 
-# Switch the Acts extension on
-option(ODD_ACTS_EXTENSION "Build within an ACTS context" OFF)
+include(FetchContent)
+
+FetchContent_Declare(actsdd4hep
+	GIT_REPOSITORY https://github.com/acts-project/acts-dd4hep.git
+	GIT_TAG v1)
+FetchContent_MakeAvailable(actsdd4hep)
+
 
 # Add the main factory 
 add_subdirectory(factory)
+
+
+configure_file(
+  ${CMAKE_CURRENT_LIST_DIR}/setup.sh.in
+  ${PROJECT_BINARY_DIR}/this_odd.sh
+  @ONLY)
+install(
+  FILES ${PROJECT_BINARY_DIR}/this_odd.sh
+  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Install the compact files
 install(DIRECTORY xml DESTINATION share/OpenDataDetector)

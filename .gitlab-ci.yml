@@ -3,18 +3,15 @@ stages:
   - test
 
 default:
-  # image: gitlab-registry.cern.ch/acts/opendatadetector/centos8-base
-  # image: gitlab-registry.cern.ch/acts/opendatadetector/centos8-base:v2
-  # image: ghcr.io/acts-project/ubuntu2004:v15
   image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2004:v15
   tags: 
     - cvmfs
 
 variables:
-  ACTS_VERSION: python-scripts-install
+  ACTS_VERSION: dd4hep_decouple
+  ACTS_GIT_URL: https://github.com/paulgessinger/acts.git # this will need to change
 
 
-# - git clone --depth 1 https://github.com/acts-project/acts.git --branch ${ACTS_VERSION}
 build-acts:
   stage: build
   cache:
@@ -23,9 +20,7 @@ build-acts:
     paths: 
       - acts-install
   script:
-    - git clone --depth 1 https://github.com/acts-project/acts.git --branch ${ACTS_VERSION}
-    - rm -rf acts/thirdparty/OpenDataDetector
-    - ln -s ../../ acts/thirdparty/OpenDataDetector
+    - git clone --depth 1 ${ACTS_GIT_URL} --branch ${ACTS_VERSION}
     - > 
       test -d acts-install ||
       (cmake -S acts -B acts-build -GNinja
@@ -39,31 +34,26 @@ build-acts:
       -DACTS_BUILD_ANALYSIS_APPS=ON
       -DACTS_BUILD_EXAMPLES_PYTHON_BINDINGS=ON
       && cmake --build acts-build --
-      && cmake --install acts-build)
+      && cmake --install acts-build
+      && cp -r acts/Examples/Scripts/Python/* acts-install/python) # this is a workaround, see https://github.com/acts-project/acts/issues/1242
 
 build-odd:
   stage: build
-  needs: [build-acts]
-  image: debian:bullseye-slim
-  cache:
-    - key: "acts_$ACTS_VERSION"
-      policy: pull
-      paths: 
-        - acts-install
-    # not strictly necessary right now since no extra build
-    # - key: "acts_${ACTS_VERSION}_odd"
-      # policy: pull-push
-      # paths: 
-        # - acts-install
+  artifacts:
+    paths:
+      - odd-install
   script:
-    echo "hi"
-    # - source /opt/lcg_view/setup.sh
-    # - source acts-install/bin/this_acts.sh
-    # - source acts-install/python/setup.sh
+    - >
+      cmake -S . -B odd-build -GNinja
+      -DCMAKE_INSTALL_PREFIX=$PWD/odd-install
+    - cmake --build odd-build --
+    - cmake --install odd-build
 
 run-full-chain:
   stage: test
-  needs: [build-odd]
+  needs: 
+    - build-odd
+    - build-acts
   cache:
     key: "acts_${ACTS_VERSION}"
     policy: pull
@@ -75,7 +65,9 @@ run-full-chain:
     expire_in: 1 month
     when: always
   script:
+    - ls -al acts-install/python
     - source acts-install/bin/this_acts.sh
+    - source odd-install/bin/this_odd.sh
     - source acts-install/python/setup.sh
     - mkdir full_chain
     - ci/full_chain_odd.py -o output -n 100000 2>&1 > full_chain/output.log
@@ -90,12 +82,15 @@ run-full-chain:
       --label-monitored $CI_COMMIT_SHORT_SHA
       --title "ODD full chain"
       -o full_chain/full_chain.html
+      -p full_chain/plots
       full_chain/performance_ckf.root
       ci/reference/performance_ckf.root
 
 run-material-composition:
   stage: test
-  needs: [build-odd]
+  needs: 
+    - build-odd
+    - build-acts
   cache:
     key: "acts_${ACTS_VERSION}"
     policy: pull
@@ -108,6 +103,7 @@ run-material-composition:
     when: always
   script:
     - source acts-install/bin/this_acts.sh
+    - source odd-install/bin/this_odd.sh
     - source acts-install/python/setup.sh
     - ci/download_geant4_data.sh
     - source /usr/local/bin/geant4.sh

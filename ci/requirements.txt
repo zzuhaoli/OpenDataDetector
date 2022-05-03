@@ -27,7 +27,7 @@ hist[plot]==2.6.1
     # via
     #   -r ci/requirements.in
     #   histcmp
-histcmp==0.3.2
+histcmp==0.4.0
     # via -r ci/requirements.in
 histoprint==2.2.1
     # via hist

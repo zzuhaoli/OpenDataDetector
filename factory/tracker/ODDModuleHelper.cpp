@@ -6,9 +6,7 @@
 
 #include "ODDModuleHelper.hpp"
 
-#ifdef ODD_ACTS_EXTENSION
-#include "Acts/Plugins/DD4hep/ActsExtension.hpp"
-#endif
+#include "ActsDD4hep/ActsExtension.hpp"
 
 using namespace std;
 using namespace dd4hep;
@@ -99,14 +97,12 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
       DetElement sensorElement(moduleElement, sensorName, sensorNum);
       sensorElement.setPlacement(placedComponent);
 
-#ifdef ODD_ACTS_EXTENSION
       // Add the sensor extension
       Acts::ActsExtension *sensorExtension = new Acts::ActsExtension();
       sensorExtension->addType("sensor", "detector");
       sensorExtension->addType("axes", "definitions", "XZY");
       // Set the extension
       sensorElement.addExtension<Acts::ActsExtension>(sensorExtension);
-#endif
     }
   }
 
@@ -211,14 +207,12 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleRectangularModule(
       DetElement sensorElement(moduleElement, sensorName, sensorNum);
       sensorElement.setPlacement(placedComponent);
 
-#ifdef ODD_ACTS_EXTENSION
       // Add the sensor extension
       Acts::ActsExtension *sensorExtension = new Acts::ActsExtension();
       sensorExtension->addType("sensor", "detector");
       sensorExtension->addType("axes", "definitions", "XYZ");
       // Set the extension
       sensorElement.addExtension<Acts::ActsExtension>(sensorExtension);
-#endif
     }
   }
 

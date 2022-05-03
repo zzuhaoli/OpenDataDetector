@@ -4,10 +4,8 @@
 //
 // Mozilla Public License Version 2.0
 
-#ifdef ODD_ACTS_EXTENSION
-#include "Acts/Plugins/DD4hep/ActsExtension.hpp"
-#include "Acts/Plugins/DD4hep/ConvertDD4hepMaterial.hpp"
-#endif
+#include "ActsDD4hep/ActsExtension.hpp"
+#include "ActsDD4hep/ConvertMaterial.hpp"
 
 #include "DD4hep/DetFactoryHelper.h"
 #include "ODDModuleHelper.hpp"
@@ -33,7 +31,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
   // Make DetElement
   DetElement endcapDetector(detName, x_det.id());
 
-#ifdef ODD_ACTS_EXTENSION
   // Add Extension to DetElement for the RecoGeometry
   Acts::ActsExtension *endcapExtension = new Acts::ActsExtension();
   endcapExtension->addType("endcap", "detector");
@@ -45,7 +42,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
                               "boundary_material");
   }
   endcapDetector.addExtension<Acts::ActsExtension>(endcapExtension);
-#endif
 
   // Make Volume
   dd4hep::xml::Dimension x_det_dim(x_det.dimensions());
@@ -180,7 +176,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
         endcapVolume.placeVolume(layerVolume, Position(0., 0., zeff));
     placedLayer.addPhysVolID("layer", layNum);
 
-#ifdef ODD_ACTS_EXTENSION
     // Place the layer with appropriate Acts::Extension
     // Configure the ACTS extension
     Acts::ActsExtension *layerExtension = new Acts::ActsExtension();
@@ -208,7 +203,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
     }
 
     layerElement.addExtension<Acts::ActsExtension>(layerExtension);
-#endif
 
     // Finish up the DetElement tree
     layerElement.setPlacement(placedLayer);
@@ -234,7 +228,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
 
     DetElement endplateElement("Endplate", 0);
 
-#ifdef ODD_ACTS_EXTENSION
     // Place the layer with appropriate Acts::Extension
     // Configure the ACTS extension
     Acts::ActsExtension *endplateExtension = new Acts::ActsExtension();
@@ -248,7 +241,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens)
     }
     endplateElement.addExtension<Acts::ActsExtension>(endplateExtension);
 
-#endif
 
     // Finish up the DetElement tree
     endplateElement.setPlacement(placedEndplate);
