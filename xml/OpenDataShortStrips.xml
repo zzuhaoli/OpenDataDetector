@@ -1,6 +1,6 @@
 <detectors>
     <!--EndcapN-->
-    <detector id="201" name="ShortStripEndcapN" type="ODDStripEndcap" readout="ShortStripEndcapReadout" vis="invisible">
+    <detector id="5" name="ShortStripEndcapN" type="ODDStripEndcap" readout="ShortStripEndcapReadout" vis="invisible">
         <dimensions name="ShortStripEndcapShape" rmin="ss_env_rmin" rmax="ss_env_rmax" dz="ss_e_dz" z="ss_e_nz"/>
         <ring name="Ring0" r="318*mm" nphi="42" reflect="true" phi0="0." gap="2.5*mm" z_offset="5.*mm"> 
           <module name="ShortStripEndcapModuleR0" vis="invisible">
@@ -69,7 +69,7 @@
         </services>
     </detector>
     <!--Barrel-->
-    <detector id="200" name="ShortStripBarrel" type="ODDStripBarrel" readout="ShortStripBarrelReadout" vis="invisible">
+    <detector id="4" name="ShortStripBarrel" type="ODDStripBarrel" readout="ShortStripBarrelReadout" vis="invisible">
         <dimensions name="ShortStripBarrelShape" rmin="ss_env_rmin" rmax="ss_env_rmax" dz="ss_b_dz" z="0.*mm"/>
         <boundary_material surface="negative" binning="binPhi,binR" bins0="mat_sst_endcap_bPhi" bins1="mat_sst_endcap_bR"/>
         <boundary_material surface="outer" binning="binPhi,binZ" bins0="mat_sst_barrel_bPhi" bins1="mat_sst_barrel_bZ"/>
@@ -115,7 +115,7 @@
         </services>   
     </detector>
     <!--EndcapP-->
-    <detector id="202" name="ShortStripEndcapP" type="ODDStripEndcap" readout="ShortStripEndcapReadout" vis="invisible">
+    <detector id="6" name="ShortStripEndcapP" type="ODDStripEndcap" readout="ShortStripEndcapReadout" vis="invisible">
         <dimensions name="ShortStripEndcapShape" rmin="ss_env_rmin" rmax="ss_env_rmax" dz="ss_e_dz" z="ss_e_pz"/>
         <ring name="Ring0" r="318*mm" nphi="42" reflect="true" phi0="0." gap="2.5*mm" z_offset="-5.*mm"> 
           <module name="ShortStripEndcapModuleR0" vis="invisible">
