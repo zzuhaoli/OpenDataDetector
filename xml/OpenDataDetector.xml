@@ -74,15 +74,15 @@
         <!-- PST Identifier -->
         <constant name="ODD_PST_ID" value="2"/>
         <!-- ShortStrips Identifiers -->
-        <constant name="ODD_ShortStrips_ID" value="3"/>
-        <constant name="ODD_ShortStripsEndcapN_ID" value="30"/>
-        <constant name="ODD_ShortStripsBarrel_ID" value="31"/>
-        <constant name="ODD_ShortStripsEndcapP_ID" value="32"/>
+        <constant name="ODD_ShortStrip_ID" value="3"/>
+        <constant name="ODD_ShortStripEndcapN_ID" value="30"/>
+        <constant name="ODD_ShortStripBarrel_ID" value="31"/>
+        <constant name="ODD_ShortStripEndcapP_ID" value="32"/>
         <!-- LongStrips Identifiers -->
-        <constant name="ODD_LongStrips_ID" value="4"/>
-        <constant name="ODD_LongStripsEndcapN_ID" value="40"/>
-        <constant name="ODD_LongStripsBarrel_ID" value="41"/>
-        <constant name="ODD_LongStripsEndcapP_ID" value="42"/>
+        <constant name="ODD_LongStrip_ID" value="4"/>
+        <constant name="ODD_LongStripEndcapN_ID" value="40"/>
+        <constant name="ODD_LongStripBarrel_ID" value="41"/>
+        <constant name="ODD_LongStripEndcapP_ID" value="42"/>
         <!-- Solenoid Identifiers -->
         <constant name="ODD_Solenoid_ID" value="5"/>
     </define>

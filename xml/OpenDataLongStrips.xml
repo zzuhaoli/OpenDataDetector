@@ -14,7 +14,7 @@
 
   <detectors>
     <!--EndcapN-->
-    <detector id="ODD_LongStripsEndcapN_ID" name="LongStripEndcapN" type="ODDStripEndcap" readout="LongStripEndcapReadout" vis="invisible">
+    <detector id="ODD_LongStripEndcapN_ID" name="LongStripEndcapN" type="ODDStripEndcap" readout="LongStripEndcapReadout" vis="invisible">
       <dimensions name="LongStripEndcapShape" rmin="ls_env_rmin" rmax="ls_env_rmax" dz="ls_e_dz" z="ls_e_nz"/>
       <ring name="Ring0" r="820.*mm" nphi="48" reflect="true" phi0="0." gap="8.*mm" z_offset="15.*mm">
         <module name="LongStripEndcapModuleR0" vis="invisible">
@@ -83,7 +83,7 @@
     </detector>
 
     <!--Barrel-->
-    <detector id="ODD_LongStripsBarrel_ID" name="LongStripBarrel" type="ODDStripBarrel" readout="LongStripBarrelReadout" vis="invisible">
+    <detector id="ODD_LongStripBarrel_ID" name="LongStripBarrel" type="ODDStripBarrel" readout="LongStripBarrelReadout" vis="invisible">
       <dimensions name="LongStripBarrelShape" rmin="ls_env_rmin" rmax="ls_env_rmax" dz="ls_b_dz" z="0.*mm"/>
       <boundary_material surface="negative" binning="binPhi,binR" bins0="mat_lst_endcap_bPhi" bins1="mat_sst_endcap_bR"/>
       <boundary_material surface="positive" binning="binPhi,binR" bins0="mat_lst_endcap_bPhi" bins1="mat_sst_endcap_bR"/>
@@ -135,7 +135,7 @@
     </detector>
 
     <!--EndcapP-->
-    <detector id="ODD_LongStripsEndcapP_ID" name="LongStripEndcapP" type="ODDStripEndcap" readout="LongStripEndcapReadout" vis="invisible">
+    <detector id="ODD_LongStripEndcapP_ID" name="LongStripEndcapP" type="ODDStripEndcap" readout="LongStripEndcapReadout" vis="invisible">
       <dimensions name="LongStripEndcapShape" rmin="ls_env_rmin" rmax="ls_env_rmax" dz="ls_e_dz" z="ls_e_pz"/>
       <ring name="Ring0" r="820.*mm" nphi="48" reflect="true" phi0="0." gap="8.*mm" z_offset="-15.*mm">
         <module name="LongStripEndcapModuleR0" vis="invisible">
