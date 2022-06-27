@@ -8,7 +8,7 @@ default:
     - cvmfs
 
 variables:
-  ACTS_VERSION: v19.0.0
+  ACTS_VERSION: v19.3.0
   ACTS_GIT_URL: https://github.com/acts-project/acts.git
 
 

@@ -11,6 +11,11 @@ project( OpenDataDetector VERSION 0.1 LANGUAGES CXX )
 # Standard CMake include(s).
 include( GNUInstallDirs )
 
+# Set a better default for installation directory
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE)
+endif()
+
 # Find the DD4Hep package with corresponding library
 find_package(DD4hep 1.11 REQUIRED CONFIG COMPONENTS DDCore DDDetectors)
 
