@@ -131,7 +131,7 @@
     </detector>
 
     <!--EndcapP-->
-    <detector id="6" name="ODD_ShortStripEndcapP_ID" type="ODDStripEndcap" readout="ShortStripEndcapReadout" vis="invisible">
+    <detector id="ODD_ShortStripEndcapP_ID" name="ShortStripEndcapP" type="ODDStripEndcap" readout="ShortStripEndcapReadout" vis="invisible">
       <dimensions name="ShortStripEndcapShape" rmin="ss_env_rmin" rmax="ss_env_rmax" dz="ss_e_dz" z="ss_e_pz"/>
       <ring name="Ring0" r="318*mm" nphi="42" reflect="true" phi0="0." gap="2.5*mm" z_offset="-5.*mm">
         <module name="ShortStripEndcapModuleR0" vis="invisible">

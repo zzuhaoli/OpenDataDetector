@@ -1,4 +1,5 @@
 <lccdd>
+
   <readouts>
     <readout name="PixelBarrelReadout">
       <segmentation type="CartesianGridXY" grid_size_x="0.05*mm" grid_size_y="0.05*mm"/>
