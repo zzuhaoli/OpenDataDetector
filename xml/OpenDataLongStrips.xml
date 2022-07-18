@@ -4,7 +4,7 @@
     <readout name="LongStripBarrelReadout">
       <segmentation type="CartesianGridXY" grid_size_x="0.15*mm" grid_size_y="1.5*mm"/>
       <id>system:4,layer:4,stave:8,module:8,sensor:2,x:32:-12,y:-12</id>
-    </readout>>
+    </readout>
     <readout name="LongStripEndcapReadout">
       <segmentation type="CartesianGridXY" grid_size_x="0.15*mm" grid_size_y="1.5*mm"/>
       <id>system:4,layer:4,ring:4,module:8,sensor:2,x:32:-12,y:-12</id>
