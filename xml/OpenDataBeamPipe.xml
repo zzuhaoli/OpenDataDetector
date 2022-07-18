@@ -1,4 +1,4 @@
- <lccdd>   
+<lccdd>
     <detectors>
         <detector id="ODD_BeamPipe_ID" name="BeamPipe" type="ODDCylinder" vis="Beryllium">
             <beampipe/>
