@@ -71,8 +71,8 @@ s = acts.examples.Sequencer(events=args.events, numThreads=args.jobs, skip=args.
 s = addParticleGun(
     s,
     MomentumConfig(1.0 * u.GeV, 10.0 * u.GeV, True),
-    EtaConfig(-3.0, 3.0, True),
-    ParticleConfig(1, acts.PdgParticle.eMuon, True),
+    EtaConfig(-4.0, 4.0, True),
+    ParticleConfig(2, acts.PdgParticle.eMuon, True),
     rnd=rnd,
 )
 s = addFatras(
@@ -106,11 +106,12 @@ s = addCKFTracks(
     CKFPerformanceConfig(ptMin=400.0 * u.MeV, nMeasurementsMin=6),
     outputDirRoot=outputDir,
 )
-s = addVertexFitting(
-    s,
-    field,
-    vertexFinder=VertexFinder.Truth,
-    outputDirRoot=outputDir,
-)
+# disabled for now, revisit once https://github.com/acts-project/acts/pull/1299 is merged
+#  s = addVertexFitting(
+    #  s,
+    #  field,
+    #  vertexFinder=VertexFinder.Truth,
+    #  outputDirRoot=outputDir,
+#  )
 
 s.run()
