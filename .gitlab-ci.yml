@@ -19,6 +19,9 @@ build-acts:
     policy: pull-push
     paths: 
       - acts-install
+  artifacts:
+    paths:
+      - acts-install
   script:
     - git clone --depth 1 ${ACTS_GIT_URL} --branch ${ACTS_VERSION}
     - > 
@@ -54,11 +57,6 @@ run-full-chain:
   needs: 
     - build-odd
     - build-acts
-  cache:
-    key: "acts_${ACTS_VERSION}"
-    policy: pull
-    paths: 
-      - acts-install
   artifacts:
     paths:
       - full_chain
@@ -91,11 +89,6 @@ run-material-composition:
   needs: 
     - build-odd
     - build-acts
-  cache:
-    key: "acts_${ACTS_VERSION}"
-    policy: pull
-    paths: 
-      - acts-install
   artifacts:
     paths:
       - plots
