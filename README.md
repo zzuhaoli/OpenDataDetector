@@ -12,6 +12,7 @@ The ODD Tracking system is an evolution of the detector used for the `Tracking M
  * a middle Short Strip system
  * an outermost Long Strip system
  * an enclosing solenoid 
+ * an optional first Electric Calorimeter implementation
 
  ## Build instructions
 
@@ -30,4 +31,10 @@ cmake -S <path_to_source> -B <path_to_build_area>  -DDD4hep_DIR=<path_to_DD4hp> 
 cmake --build <path_to_build_area>
  ```
 
+### Displaying with DD4hep
 
+You can use the built-in `geoPluginRun` from DD4hep for displaying the detector:
+
+```sh
+geoPluginRun -input xml/OpenDataDetector.xml  -interactive -plugin DD4hep_GeometryDisplay -level 8
+```
