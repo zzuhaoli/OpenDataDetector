@@ -8,9 +8,6 @@
 
 #include "DD4hep/DetFactoryHelper.h"
 
-using namespace std;
-using namespace dd4hep;
-
 /// Helper method to build service routing for the Barrel type
 ///
 /// @tparam volume_t the Type of volume (Volume, Assembly)
@@ -20,9 +17,12 @@ using namespace dd4hep;
 /// @param x_routing the xml description of the routing
 /// @param layerR the layer radii to connect
 template <typename volume_t>
-void buildBarrelRouting(Detector& oddd, volume_t& barrelVolume,
+void buildBarrelRouting(dd4hep::Detector& oddd, volume_t& barrelVolume,
                         const xml_comp_t& x_routing,
                         const std::vector<double>& layerR) {
+
+  using namespace dd4hep;
+
   // Grab the cables & route them outwards
   unsigned int nphi = x_routing.nphi();
 
@@ -89,9 +89,12 @@ void buildBarrelRouting(Detector& oddd, volume_t& barrelVolume,
 /// @param x_routing the xml description of the routing
 /// @param endcapZ the layer z positions to connect
 template <typename volume_t>
-void buildEndcapRouting(Detector& oddd, volume_t& endcapVolume,
+void buildEndcapRouting(dd4hep::Detector& oddd, volume_t& endcapVolume,
                         const xml_comp_t& x_routing,
                         const std::vector<double>& endcapZ) {
+  
+  using namespace dd4hep;
+  
   // Grab the cables & route them outwards
   unsigned int nphi = x_routing.nphi();
 
@@ -155,14 +158,17 @@ void buildEndcapRouting(Detector& oddd, volume_t& endcapVolume,
 /// @param x_mother_comp the xml description of teh mother component
 /// @param layerR the layer radii contaienr to add the new one
 template <typename volume_t>
-void buildSupportCylinder(Detector& oddd, volume_t& motherVolume,
+void buildSupportCylinder(dd4hep::Detector& oddd, volume_t& motherVolume,
                           const xml_comp_t& x_mother_comp,
                           std::vector<double>& layerR) {
+  
+  using namespace dd4hep;
+  
   size_t supportNum = 0;
   for (xml_coll_t sup(x_mother_comp, _U(support)); sup; ++sup, ++supportNum) {
     xml_comp_t x_support = sup;
     // Create the volume of the support structure
-    string supportName = _toString((int)supportNum, "SupportCylinder%d");
+    std::string supportName = _toString((int)supportNum, "SupportCylinder%d");
 
     // Remember the layer radius if it is needed for operation
     if (x_support.hasChild(_Unicode(connector))) {
@@ -191,8 +197,11 @@ void buildSupportCylinder(Detector& oddd, volume_t& motherVolume,
 /// @param x_mother_comp the xml description of teh mother component
 /// @param layerR the layer radii contaienr to add the new one
 template <typename volume_t>
-void buildCoolingRings(Detector& oddd, volume_t& motherVolume,
+void buildCoolingRings(dd4hep::Detector& oddd, volume_t& motherVolume,
                        const xml_comp_t& x_mother_comp) {
+  
+  using namespace dd4hep;
+  
   size_t cringNum = 0;
   for (xml_coll_t cring(x_mother_comp, _Unicode(cooling_ring)); cring;
        ++cring, ++cringNum) {
