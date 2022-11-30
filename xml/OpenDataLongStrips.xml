@@ -115,12 +115,12 @@
       <stave name="LongStripBarrelStave" nmodules="21" gap=".5*mm" vis="invisible">
         <eltube name="CableBundle" rmin="0.5*mm" rmax="1.5*mm" r="820.*mm" x_offset="0.*mm" y_offset="0.*mm" z_offset="0.*mm" material="Cu" vis="orange"/>
       </stave>
-      <layer id="0" name="LongStripLayer0" rmin="790.*mm" r="820.*mm" rmax="840.*mm" outer_z="20.*mm" nphi="60" phi_tilt="-0.15" phi0="0." vis="invisible">
+      <layer id="0" name="LongStripLayer0" rmin="810.*mm" r="820.*mm" rmax="840.*mm" outer_z="20.*mm" nphi="60" phi_tilt="-0.15" phi0="0." vis="invisible">
         <support name="InnerSupportRings" rmin="795.*mm" rmax="810.*mm" dz="50.*mm" z_offset="300.*mm" nsides="2" material="CarbonFiber" vis="CarbonFiber"/>
         <support name="OuterSupportRings" rmin="795.*mm" rmax="810.*mm" dz="50.*mm" z_offset="1000.*mm" nsides="2" material="CarbonFiber" vis="CarbonFiber"/>
         <layer_material surface="inner" binning="binPhi,binZ" bins0="mat_lst_barrel_bPhi" bins1="mat_lst_barrel_bZ"/>
       </layer>
-      <layer id="1" name="LongStripLayer1" rmin="990.*mm" r="1020.*mm" rmax="1040.*mm" outer_z="20.*mm" nphi="80" phi_tilt="-0.15" phi0="0." vis="invisible">
+      <layer id="1" name="LongStripLayer1" rmin="1010.*mm" r="1020.*mm" rmax="1040.*mm" outer_z="20.*mm" nphi="80" phi_tilt="-0.15" phi0="0." vis="invisible">
         <support name="InnerSupportRings" rmin="995.*mm" rmax="1010.*mm" dz="50.*mm" z_offset="300.*mm" nsides="2" material="CarbonFiber" vis="CarbonFiber"/>
         <support name="OuterSupportRings" rmin="995.*mm" rmax="1010.*mm" dz="50.*mm" z_offset="1000.*mm" nsides="2" material="CarbonFiber" vis="CarbonFiber"/>
         <layer_material surface="inner" binning="binPhi,binZ" bins0="mat_lst_barrel_bPhi" bins1="mat_lst_barrel_bZ"/>
