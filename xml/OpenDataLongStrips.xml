@@ -129,10 +129,10 @@
         <connector/>
       </support>
       <services>
-        <cable_routing nphi="30" phi0="0." number="10" rmin="0.*mm" rmax="0.75*mm" dz="2.*mm" z_offset="1159.*mm" gap="8.*mm" material="Cu" vis="orange">
+        <cable_routing nphi="30" phi0="0." number="10" rmin="0.*mm" rmax="0.75*mm" dz="2.*mm" z_offset="1164.*mm" gap="8.*mm" material="Cu" vis="orange">
           <box dz="2.*mm" material="CarbonFiber" vis="CarbonFiber"/>
         </cable_routing>
-        <cooling_routing nphi="30" phi0="0.104" number="6" rmin="1.2*mm" rmax="1.4*mm" dz="0.*mm" z_offset="1159.*mm" gap="8.*mm" material="Ti" vis="orange"/>
+        <cooling_routing nphi="30" phi0="0.104" number="6" rmin="1.2*mm" rmax="1.4*mm" dz="0.*mm" z_offset="1164.*mm" gap="8.*mm" material="Ti" vis="orange"/>
       </services>
     </detector>
 
