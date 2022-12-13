@@ -56,9 +56,14 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
 
   // Create the stave volume and DetElement tree
   xml_comp_t x_stave = x_det.child(_U(stave));
-  Assembly staveAssembly("stave");
+  string staveName = x_stave.nameStr();
+  double staveOffset = x_stave.z_offset();
+  Assembly staveAssembly(staveName);
+  Box staveShape(x_stave.dx(), x_stave.dy(), x_stave.dz());
+  Volume staveVolume(staveName + "Modules", staveShape, oddd.air());
   // Visualization
   staveAssembly.setVisAttributes(oddd, x_stave.visStr());
+  staveVolume.setVisAttributes(oddd, x_stave.visStr());
   // DetElement tree
   DetElement staveElementTemplate("StaveElementTemplate", 0);
 
@@ -78,34 +83,10 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
   // Loop over the modules and place them in the stave
   for (unsigned int moduleNum = 0; moduleNum < nModules; ++moduleNum) {
     double positionY = -ymin + moduleNum * ystep;
-    // Place the cable bundle, one per stave
-    if (x_stave.hasChild(_U(eltube))) {
-      // Retrieve cable parameters
-      xml_comp_t x_cable = x_stave.child(_U(eltube));
-
-      double rMin = x_cable.rmin();
-      double rMax = x_cable.rmax();
-
-      // For an odd number of modules this will create an asymmetric powering
-      // (as it should)
-      double rStep = (rMax - rMin) / (0.5 * nModules);
-      double rCable = rMin + abs(moduleNum - 0.5 * nModules) * rStep;
-
-      Tube cable(0., rCable, 0.495 * ystep);
-      // Create the scable volume
-      Volume cableVolume("Cable", cable, oddd.material(x_cable.materialStr()));
-      cableVolume.setVisAttributes(oddd, x_cable.visStr());
-
-      // Place the pipe in the stave
-      staveAssembly.placeVolume(
-          cableVolume, Transform3D(RotationX(0.5 * M_PI),
-                                   Position(x_cable.x_offset(), positionY,
-                                            x_cable.z_offset())));
-    }
 
     // Place them along local y
-    PlacedVolume placedModule =
-        staveAssembly.placeVolume(module.first, Position(0., positionY, 0.));
+    PlacedVolume placedModule = staveVolume.placeVolume(
+        module.first, Position(0., positionY, staveOffset));
     placedModule.addPhysVolID("module", moduleNum);
 
     string moduleName = _toString((int)moduleNum, "module%d");
@@ -115,6 +96,54 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
     // Assign it as child to the stave template
     staveElementTemplate.add(moduleElement);
   }
+
+  // Place the cable bundle, one per stave
+  if (x_stave.hasChild(_U(eltube))) {
+    // Retrieve cable parameters
+    xml_comp_t x_cable = x_stave.child(_U(eltube));
+
+    double rMin = x_cable.rmin();
+    double rMax = x_cable.rmax();
+
+    Tube cablesSolid(0, rMax, 0.5 * nModules * ystep);
+    Volume cablesVolume(staveName + "Cables", cablesSolid, oddd.air());
+    cablesVolume.setVisAttributes(oddd, x_stave.visStr());
+
+    // For an odd number of modules this will create an asymmetric powering
+    // (as it should)
+    double rStep = (rMax - rMin) / (0.5 * nModules);
+
+    for (unsigned int moduleNum = 0; moduleNum < nModules; ++moduleNum) {
+      double positionY = -ymin + moduleNum * ystep;
+      double rCable = rMin + abs(moduleNum - 0.5 * nModules) * rStep;
+
+      Tube cable(0., rCable, 0.495 * ystep);
+      // Create the scable volume
+      Volume cableVolume("Cable", cable, oddd.material(x_cable.materialStr()));
+      cableVolume.setVisAttributes(oddd, x_cable.visStr());
+
+      // Place the pipe in the cable bundle
+      cablesVolume.placeVolume(cableVolume, Position(0, 0, positionY));
+    }
+
+    if (std::abs(x_cable.z_offset()) < x_stave.dz()) {
+      // If the cables are inside the stave volume, place it there and hope for
+      // no extrusions.
+      staveVolume.placeVolume(
+          cablesVolume,
+          Transform3D(RotationX(0.5 * M_PI),
+                      Position(x_cable.x_offset(), 0,
+                               x_cable.z_offset() + staveOffset)));
+    } else {
+      // Otherwise just put it in the assembly and hope there are no overlaps.
+      staveAssembly.placeVolume(
+          cablesVolume,
+          Transform3D(RotationX(0.5 * M_PI),
+                      Position(x_cable.x_offset(), 0, x_cable.z_offset())));
+    }
+  }
+
+  staveAssembly.placeVolume(staveVolume, Position(0, 0, -staveOffset));
 
   // Remember the layer radii
   std::vector<double> layerR;
@@ -146,7 +175,7 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
 
     // Loop over the staves and place them
     for (unsigned int staveNum = 0; staveNum < nStaves; ++staveNum) {
-      string staveName = _toString((int)staveNum, "stave%d");
+      string placedStaveName = _toString((int)staveNum, "stave%d");
       // position of the stave
       double phi = phi0 + staveNum * phiStep;
       double x = r * cos(phi);
@@ -160,7 +189,8 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
       placedStave.addPhysVolID("stave", staveNum);
 
       // Clone the stave element from the template
-      DetElement staveElement = staveElementTemplate.clone(staveName, staveNum);
+      DetElement staveElement =
+          staveElementTemplate.clone(placedStaveName, staveNum);
       staveElement.setPlacement(placedStave);
       // Add to the layer element
       layerElement.add(staveElement);

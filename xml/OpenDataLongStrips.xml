@@ -112,7 +112,7 @@
         <module_component name="BoardA" alpha="0." dx="96.*mm" dy="108*mm" dz="0.25*mm" x_offset="0." y_offset="0." z_offset="3.05*mm" material="Kapton" vis="Kapton" sensitive="false"/>
         <module_component name="SensorA" alpha="0." dx="96.*mm" dy="108.*mm" dz="0.25*mm" x_offset="0." y_offset="0." z_offset="3.3*mm" material="Silicon" vis="Silicon" sensitive="true"/>
       </module>
-      <stave name="LongStripBarrelStave" nmodules="21" gap=".5*mm" vis="invisible">
+      <stave name="LongStripBarrelStave" dx="51.*mm" dy="1150.*mm" dz="3.55*mm" z_offset="0." nmodules="21" gap=".5*mm" vis="invisible">
         <eltube name="CableBundle" rmin="0.5*mm" rmax="1.5*mm" r="820.*mm" x_offset="0.*mm" y_offset="0.*mm" z_offset="0.*mm" material="Cu" vis="orange"/>
       </stave>
       <layer id="0" name="LongStripLayer0" rmin="810.*mm" r="820.*mm" rmax="840.*mm" outer_z="20.*mm" nphi="60" phi_tilt="-0.15" phi0="0." vis="invisible">
