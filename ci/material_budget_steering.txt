@@ -1,0 +1,23 @@
+# Steering file for materialBudget for ODD
+
+# root output file
+rootfile material_budget.root
+# number of bins for polar angle (default 90)
+nbins 60
+
+# use pseudo rapidity rather than polar angle - specify maximum eta value
+etaMax 4
+
+# phi direction in deg (default: 90./y-axis)
+phi 90
+
+# names and subdetector ranges given in [rmin,zmin,rmax,zmax]
+# rmin should be equal to rmax but this yields <<Got uncaught exception:std::bad_alloc>>
+# (tested with DD4hep 1.22, to be followed)
+
+subdet beampipe         0.    399.9     2.44 400
+subdet pixel            2.5   239.9     20   240
+subdet sstrips          20.2  314.9     72   315
+subdet lstrips          72    314.9     114  315
+subdet solenoid         116   299.9     120  300
+subdet ecal             125   304.9     150  305

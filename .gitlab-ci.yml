@@ -118,6 +118,34 @@ run-material-composition:
       plots/material_composition.root
       ci/reference/material_composition.root
 
+run-material-budget-dd4hep:
+  stage: test
+  needs:
+    - build-odd
+  artifacts:
+    paths:
+      - plots_dd4hep
+    expire_in: 1 month
+    when: always
+  script:
+    - source odd-install/bin/this_odd.sh
+    - ci/download_geant4_data.sh
+    - source /usr/local/bin/geant4.sh
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir plots_dd4hep
+    - ci/material_budget_dd4hep.sh plots_dd4hep
+    - pip install -r ci/requirements.txt
+    - source /usr/local/bin/thisroot.sh
+    - ci/make_material_plots.py plots_dd4hep/material_budget_results.root plots_dd4hep
+    - >
+      histcmp
+      --label-reference $(cat ci/reference/commit.txt)
+      --label-monitored $CI_COMMIT_SHORT_SHA
+      --title "ODD material composition"
+      -o plots_dd4hep/material.html
+      plots_dd4hep/material_budget_results.root
+      ci/reference/material_budget_dd4hep.root
+
 run-ddsim:
   stage: test
   needs: []
