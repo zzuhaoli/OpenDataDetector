@@ -3,7 +3,7 @@ stages:
   - test
 
 default:
-  image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2004:v29
+  image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2004:v33
   tags: 
     - docker
 
