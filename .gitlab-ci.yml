@@ -157,3 +157,30 @@ run-ddsim:
     - source /usr/local/bin/thisdd4hep.sh
     - export LD_LIBRARY_PATH=$PWD/build/factory:$LD_LIBRARY_PATH
     - python3 $(which ddsim) --enableGun --numberOfEvents 100 --gun.thetaMin 0.1415 --gun.thetaMax 3.0  --gun.distribution uniform --compactFile xml/OpenDataDetector.xml --outputFile ddsim.root
+
+export-geometry:
+  stage: test
+  needs:
+    - build-odd
+  artifacts:
+    paths:
+      - export_geometry
+    expire_in: 1 month
+    when: always
+  script:
+    - source odd-install/bin/this_odd.sh
+    - ci/download_geant4_data.sh
+    - source /usr/local/bin/geant4.sh
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir export_geometry
+    - geoConverter -compact2gdml -input xml/OpenDataDetector.xml -output export_geometry/OpenDataDetector.gdml
+    - root -x 'ci/export_geometry_gdml2tgeo.C("export_geometry/OpenDataDetector.gdml", "export_geometry/ODD.root")'
+    - git clone https://github.com/kjvbrt/root2gltf.git
+    - cd root2gltf
+    - git checkout 3b263d0eda2d245c81316d2dd12303761a78f002
+    - curl -sL https://deb.nodesource.com/setup_16.x -o /tmp/nodesource_setup.sh
+    - bash /tmp/nodesource_setup.sh
+    - apt-get install -y python nodejs libxi-dev libglu1-mesa-dev libglew-dev pkg-config
+    - npm ci
+    - node . ../export_geometry/ODD.root -c ../ci/export_geometry_config.json
+    - mv ODD.gltf ../export_geometry/.

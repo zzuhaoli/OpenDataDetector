@@ -1,0 +1,14 @@
+{
+  "childrenToHide": [
+      "PST_2"
+  ],
+  "subParts": {
+      "Beampipe" : [["BeamPipe_0"], true],
+      "Tracker > pixels" : [["Pixels_1"], true],
+      "Tracker > shortStrips" : [["ShortStrips_3"], true],
+      "Tracker > longStrips" : [["LongStrips_4"], true],
+      "Solenoid" : [["Solenoid_5"], true],
+      "ECal" : [["ECal_6"], true]
+  },
+  "maxLevel": 4
+}
