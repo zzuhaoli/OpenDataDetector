@@ -50,7 +50,7 @@
 
             <dimensions numsides="ecal_b_symmetry" rmin="ecal_b_rmin" z="ecal_b_hlength*2" />
             <staves vis="ECalStaveVis" />
-            <layer repeat="40" vis="ECalLayerVis">
+            <layer repeat="48" vis="ECalLayerVis">
                 <slice material = "TungstenDens24" thickness = "1.90*mm" vis="ECalAbsorberVis" radiator="yes"/>
                 <slice material = "G10"            thickness = "0.15*mm" vis="InvisibleNoDaughters"/>
                 <slice material = "GroundOrHVMix"  thickness = "0.10*mm" vis="ECalAbsorberVis"/>
