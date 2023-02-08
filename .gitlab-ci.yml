@@ -3,7 +3,7 @@ stages:
   - test
 
 default:
-  image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2004:v33
+  image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2204:v33
   tags: 
     - docker
 
@@ -99,7 +99,7 @@ run-material-composition:
     - source acts-install/bin/this_acts.sh
     - source odd-install/bin/this_odd.sh
     - source acts-install/python/setup.sh
-    - ci/download_geant4_data.sh
+    - /usr/local/bin/geant4-config --install-datasets
     - source /usr/local/bin/geant4.sh
     - source /usr/local/bin/thisdd4hep.sh
     - ci/run_material_recording.py -o g4 -n 100000
@@ -129,7 +129,7 @@ run-material-budget-dd4hep:
     when: always
   script:
     - source odd-install/bin/this_odd.sh
-    - ci/download_geant4_data.sh
+    - /usr/local/bin/geant4-config --install-datasets
     - source /usr/local/bin/geant4.sh
     - source /usr/local/bin/thisdd4hep.sh
     - mkdir plots_dd4hep
@@ -148,14 +148,13 @@ run-material-budget-dd4hep:
 
 run-ddsim:
   stage: test
-  needs: []
+  needs:
+    - build-odd
   script:
-    - ci/download_geant4_data.sh
-    - mkdir build
-    - cmake -S . -B build -GNinja
-    - cmake --build build
+    - source odd-install/bin/this_odd.sh
+    - /usr/local/bin/geant4-config --install-datasets
+    - source /usr/local/bin/geant4.sh
     - source /usr/local/bin/thisdd4hep.sh
-    - export LD_LIBRARY_PATH=$PWD/build/factory:$LD_LIBRARY_PATH
     - python3 $(which ddsim) --enableGun --numberOfEvents 100 --gun.thetaMin 0.1415 --gun.thetaMax 3.0  --gun.distribution uniform --compactFile xml/OpenDataDetector.xml --outputFile ddsim.root
 
 export-geometry:
@@ -169,7 +168,7 @@ export-geometry:
     when: always
   script:
     - source odd-install/bin/this_odd.sh
-    - ci/download_geant4_data.sh
+    - /usr/local/bin/geant4-config --install-datasets
     - source /usr/local/bin/geant4.sh
     - source /usr/local/bin/thisdd4hep.sh
     - mkdir export_geometry
@@ -180,7 +179,7 @@ export-geometry:
     - git checkout 3b263d0eda2d245c81316d2dd12303761a78f002
     - curl -sL https://deb.nodesource.com/setup_16.x -o /tmp/nodesource_setup.sh
     - bash /tmp/nodesource_setup.sh
-    - apt-get install -y python nodejs libxi-dev libglu1-mesa-dev libglew-dev pkg-config
+    - apt-get install -y nodejs libxi-dev libglu1-mesa-dev libglew-dev pkg-config
     - npm ci
     - node . ../export_geometry/ODD.root -c ../ci/export_geometry_config.json
     - mv ODD.gltf ../export_geometry/.
