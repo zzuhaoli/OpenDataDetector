@@ -71,8 +71,6 @@ static void placeStaves(DetElement &parent, DetElement &stave, double rmin, int 
 static Ref_t create_detector(Detector &theDetector, xml_h e, SensitiveDetector sens)
 {
     xml_det_t x_det = e;
-    unsigned int totalRepeat = 0;
-    unsigned int totalSlices = 0;
     Layering layering(x_det);
     xml_comp_t staves = x_det.staves();
     xml_dim_t dim = x_det.dimensions();
@@ -114,14 +112,6 @@ static Ref_t create_detector(Detector &theDetector, xml_h e, SensitiveDetector s
     caloData->gap0 = 0.; // FIXME
     caloData->gap1 = 0.; // FIXME
     caloData->gap2 = 0.; // FIXME
-
-    for (xml_coll_t c(x_det, _U(layer)); c; ++c)
-    {
-        xml_comp_t x_layer = c;
-        int repeat = x_layer.repeat();
-        totalRepeat += repeat;
-        totalSlices += x_layer.numChildren(_U(slice));
-    }
 
     // --- create an envelope volume and position it into the world ---------------------
 
