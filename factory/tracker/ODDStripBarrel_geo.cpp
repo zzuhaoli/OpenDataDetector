@@ -210,12 +210,19 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
     layerParams.set<double>("envelope_z_max", 10.);
 
     // Add the proto layer material
+    unsigned int nMaterialSurfaces = 0;
     for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat) {
       xml_comp_t x_layer_material = lmat;
       ODDHelper::xmlToProtoSurfaceMaterial(x_layer_material, layerParams,
-                                           "layer_material");
+                                           "layer_material", nMaterialSurfaces);
+      ++nMaterialSurfaces;
     }
-
+    // Set the number of passive surfaces to process
+    if (nMaterialSurfaces > 0) {
+      layerParams.set<bool>("passive_surface", true);
+      layerParams.set<int>("passive_surface_count", nMaterialSurfaces);
+    }
+    
     PlacedVolume placedLayer = barrelVolume.placeVolume(layerVolume);
     placedLayer.addPhysVolID("layer", layerNum);
 

@@ -77,8 +77,7 @@ static void completeStaveStructure(Detector &oddd, xml_comp_t &x_stave,
 
       Tube cable(x_cable.rmin(), x_cable.rmax(), 0.5 * cableLength);
       // Create the cable volume
-      Volume cableVolume("Cable", cable,
-                         oddd.material(x_cable.materialStr()));
+      Volume cableVolume("Cable", cable, oddd.material(x_cable.materialStr()));
       cableVolume.setVisAttributes(oddd, x_cable.visStr());
 
       for (int side = -1; side < 2; side += 2) {
@@ -235,10 +234,17 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
     layerParams.set<double>("envelope_z_min", 5.);
     layerParams.set<double>("envelope_z_max", 5.);
     // Add the proto layer material
+    unsigned int nMaterialSurfaces = 0;
     for (xml_coll_t lmat(x_layer, _Unicode(layer_material)); lmat; ++lmat) {
       xml_comp_t x_layer_material = lmat;
       ODDHelper::xmlToProtoSurfaceMaterial(x_layer_material, layerParams,
-                                           "layer_material");
+                                           "layer_material", nMaterialSurfaces);
+      ++nMaterialSurfaces;
+    }
+    // Set the number of passive surfaces to process
+    if (nMaterialSurfaces > 0) {
+      layerParams.set<bool>("passive_surface", true);
+      layerParams.set<int>("passive_surface_count", nMaterialSurfaces);
     }
 
     PlacedVolume placedLayer = barrelVolume.placeVolume(layerVolume);

@@ -28,7 +28,8 @@ T& ensureExtension(dd4hep::DetElement& elt) {
 
 inline void xmlToProtoSurfaceMaterial(const xml_comp_t& x_material,
                                       dd4hep::rec::VariantParameters& params,
-                                      const std::string& baseTag) {
+                                      const std::string& baseTag,
+                                      int nMaterialSurface = 0) {
   using namespace std::string_literals;
 using namespace dd4hep;
 
@@ -53,6 +54,11 @@ using namespace dd4hep;
     params.set<int>(btmSurface + "_"s + bin0, nBins0);
     params.set<int>(btmSurface + "_"s + bin1, nBins1);
   }
+
+  // New style detector description
+  params.set<std::string>("passive_surface_n"+std::to_string(nMaterialSurface)+"_type", mSurface);
+  std::cout << "Setting passive surface type " << mSurface << std::endl;
+
 }
 
 }  // namespace ODDHelper
