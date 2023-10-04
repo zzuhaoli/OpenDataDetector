@@ -68,10 +68,16 @@ def runMaterialRecording(seed: int, events: int, outputFile: Path):
 
         tracksPerEvent = 10
 
-        dd4hepSvc = acts.examples.dd4hep.DD4hepGeometryService(
-            xmlFileNames=[str(oddDir/ "xml/OpenDataDetector.xml")]
+        detector, trackingGeometry, decorators = getOpenDataDetector(oddDir)
+
+        detectorConstructionFactory = (
+            acts.examples.geant4.dd4hep.DDG4DetectorConstructionFactory(detector)
         )
-        g4geo = acts.examples.geant4.dd4hep.DDG4DetectorConstruction(dd4hepSvc)
+
+        #  dd4hepSvc = acts.examples.dd4hep.DD4hepGeometryService(
+            #  xmlFileNames=[str(oddDir/ "xml/OpenDataDetector.xml")]
+        #  )
+        #  g4geo = acts.examples.geant4.dd4hep.DDG4DetectorConstruction(dd4hepSvc)
 
         s = acts.examples.Sequencer(events=events, numThreads=1)
 
@@ -99,18 +105,27 @@ def runMaterialRecording(seed: int, events: int, outputFile: Path):
 
         s.addReader(evGen)
 
-        g4AlgCfg = acts.examples.geant4.materialRecordingConfig(
+        g4Alg = acts.examples.geant4.Geant4MaterialRecording(
             level=acts.logging.INFO,
-            detector=g4geo,
+            detectorConstructionFactory=detectorConstructionFactory,
+            randomNumbers=rnd,
             inputParticles=evGen.config.outputParticles,
             outputMaterialTracks="material_tracks",
         )
 
-        g4AlgCfg.detectorConstruction = g4geo
 
-        g4Alg = acts.examples.geant4.Geant4Simulation(
-            level=acts.logging.INFO, config=g4AlgCfg
-        )
+        #  g4AlgCfg = acts.examples.geant4.materialRecordingConfig(
+            #  level=acts.logging.INFO,
+            #  detector=g4geo,
+            #  inputParticles=evGen.config.outputParticles,
+            #  outputMaterialTracks="material_tracks",
+        #  )
+
+        #  g4AlgCfg.detectorConstruction = g4geo
+
+        #  g4Alg = acts.examples.geant4.Geant4Simulation(
+            #  level=acts.logging.INFO, config=g4AlgCfg
+        #  )
 
         s.addAlgorithm(g4Alg)
 
@@ -148,7 +163,7 @@ with ProcessPoolExecutor(args.jobs) as ex:
     for i, events in enumerate(events_per_proc):
         #  out = Path(f"mp_output/{i}")
         #  out.mkdir(exist_ok=True, parents=True)
-        futures.append(ex.submit(runMaterialRecording, 1247*i, events, args.output / f"geant4_material_tracks_{i:>02d}.root"))
+        futures.append(ex.submit(runMaterialRecording, 1247*(i+1), events, args.output / f"geant4_material_tracks_{i:>02d}.root"))
 
 
     n = 0

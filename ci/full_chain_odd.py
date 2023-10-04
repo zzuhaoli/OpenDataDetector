@@ -1,7 +1,32 @@
 #!/usr/bin/env python3
 import argparse
 import pathlib, acts, acts.examples
-import acts.examples.dd4hep
+import os, argparse, pathlib, acts, acts.examples
+from acts.examples.simulation import (
+    addParticleGun,
+    MomentumConfig,
+    EtaConfig,
+    PhiConfig,
+    ParticleConfig,
+    addPythia8,
+    addFatras,
+    addGeant4,
+    ParticleSelectorConfig,
+    addDigitization,
+)
+from acts.examples.reconstruction import (
+    addSeeding,
+    TruthSeedRanges,
+    addCKFTracks,
+    TrackSelectorConfig,
+    addAmbiguityResolution,
+    AmbiguityResolutionConfig,
+    addAmbiguityResolutionML,
+    AmbiguityResolutionMLConfig,
+    addVertexFitting,
+    VertexFinder,
+)
+from acts.examples.odd import getOpenDataDetector
 
 def getOpenDataDetector(odd_dir, mdecorator=None):
     import acts.examples.dd4hep
@@ -43,75 +68,98 @@ parser.add_argument(
     default=pathlib.Path.cwd(),
     help="Output directories. Default: $PWD",
 )
-args = parser.parse_args()
 
+args = vars(parser.parse_args())
 
 u = acts.UnitConstants
-outputDir = args.output
+geoDir = pathlib.Path(__file__).parent.parent
+outputDir = args["output"]
+# acts.examples.dump_args_calls(locals())  # show python binding calls
 
-oddDir = pathlib.Path(__file__).parent.parent
-
-oddMaterialMap = oddDir / "data/odd-material-maps.root"
-oddDigiConfig = oddDir / "config/odd-digi-smearing-config.json"
-oddSeedingSel = oddDir / "config/odd-seeding-config.json"
+oddMaterialMap = geoDir / "data/odd-material-maps.root"
+oddDigiConfig = geoDir / "config/odd-digi-smearing-config.json"
+oddSeedingSel = geoDir / "config/odd-seeding-config.json"
 oddMaterialDeco = acts.IMaterialDecorator.fromFile(oddMaterialMap)
 
-detector, trackingGeometry, decorators = getOpenDataDetector(oddDir, mdecorator=oddMaterialDeco)
+detector, trackingGeometry, decorators = getOpenDataDetector(
+    geoDir, mdecorator=oddMaterialDeco
+)
 field = acts.ConstantBField(acts.Vector3(0.0, 0.0, 2.0 * u.T))
 rnd = acts.examples.RandomNumbers(seed=42)
 
-from particle_gun import addParticleGun, MomentumConfig, EtaConfig, ParticleConfig
-from fatras import addFatras
-from digitization import addDigitization
-from seeding import addSeeding, TruthSeedRanges
-from ckf_tracks import addCKFTracks, CKFPerformanceConfig
-from vertex_fitting import addVertexFitting, VertexFinder
-
-s = acts.examples.Sequencer(events=args.events, numThreads=args.jobs, skip=args.skip)
-s = addParticleGun(
-    s,
-    MomentumConfig(1.0 * u.GeV, 10.0 * u.GeV, True),
-    EtaConfig(-4.0, 4.0, True),
-    ParticleConfig(2, acts.PdgParticle.eMuon, True),
-    rnd=rnd,
+s = acts.examples.Sequencer(
+    events=args["events"],
+    numThreads=args["jobs"],
+    outputDir=str(outputDir),
+    trackFpes=False,
 )
-s = addFatras(
+
+addParticleGun(
+        s,
+        MomentumConfig(1.0 * u.GeV, 10.0 * u.GeV, transverse=True),
+        EtaConfig(-4.0, 4.0, True),
+        ParticleConfig(2, acts.PdgParticle.eMuon, True),
+        rnd=rnd,
+)
+
+addFatras(
     s,
     trackingGeometry,
     field,
+    preSelectParticles=ParticleSelectorConfig(),
+    enableInteractions=True,
     outputDirRoot=outputDir,
+    # outputDirCsv=outputDir,
     rnd=rnd,
 )
-s = addDigitization(
+
+addDigitization(
     s,
     trackingGeometry,
     field,
     digiConfigFile=oddDigiConfig,
     outputDirRoot=outputDir,
+    # outputDirCsv=outputDir,
     rnd=rnd,
 )
-s = addSeeding(
+
+addSeeding(
     s,
     trackingGeometry,
     field,
-    TruthSeedRanges(pt=(1.0 * u.GeV, None), eta=(-2.7, 2.7), nHits=(9, None)),
+    TruthSeedRanges(),
     geoSelectionConfigFile=oddSeedingSel,
     outputDirRoot=outputDir,
-    initialVarInflation=[100, 100, 100, 100, 100, 100],
 )
-s = addCKFTracks(
+
+addCKFTracks(
     s,
     trackingGeometry,
     field,
-    CKFPerformanceConfig(ptMin=400.0 * u.MeV, nMeasurementsMin=6),
+    TrackSelectorConfig(
+        pt=(0.0, None),
+        absEta=(None, 3.0),
+        loc0=(-4.0 * u.mm, 4.0 * u.mm),
+        nMeasurementsMin=7,
+    ),
+    outputDirRoot=outputDir,
+    # outputDirCsv=outputDir,
+)
+
+addAmbiguityResolution(
+    s,
+    AmbiguityResolutionConfig(
+        maximumSharedHits=3, maximumIterations=1000000, nMeasurementsMin=7
+    ),
+    outputDirRoot=outputDir,
+    # outputDirCsv=outputDir,
+)
+
+addVertexFitting(
+    s,
+    field,
+    vertexFinder=VertexFinder.Iterative,
     outputDirRoot=outputDir,
 )
-# disabled for now, revisit once https://github.com/acts-project/acts/pull/1299 is merged
-#  s = addVertexFitting(
-    #  s,
-    #  field,
-    #  vertexFinder=VertexFinder.Truth,
-    #  outputDirRoot=outputDir,
-#  )
 
 s.run()

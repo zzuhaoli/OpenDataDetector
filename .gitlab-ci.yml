@@ -4,11 +4,9 @@ stages:
 
 default:
   image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2204:v33
-  tags: 
-    - docker
 
 variables:
-  ACTS_VERSION: v20.0.0-rc.1
+  ACTS_VERSION: v29.1.0
   ACTS_GIT_URL: https://github.com/acts-project/acts.git
 
 
@@ -72,7 +70,7 @@ run-full-chain:
     - ci/full_chain_odd.py -o output -n 100000 2>&1 > full_chain/output.log
     - >
       cp output/performance_ckf.root full_chain
-      && cp output/performance_seeding_hists.root full_chain
+      && cp output/performance_seeding.root full_chain
     - pip install -r ci/requirements.txt
     - source /usr/local/bin/thisroot.sh
     - >
