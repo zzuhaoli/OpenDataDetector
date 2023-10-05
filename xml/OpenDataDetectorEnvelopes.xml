@@ -52,8 +52,7 @@
         <constant name="ecal_e_outer_radius" value="1500.*mm"/>
         <constant name="ecal_e_min_z" value="3.2*m"/>
         <constant name="ecal_e_max_z" value="3.45*m"/>
-        <constant name="ecal_e_inner_symmetry" value="16"/>
-        <constant name="ecal_e_outer_symmetry" value="16"/>
+        <constant name="ecal_e_symmetry" value="16"/>
         <constant name="ecal_e_env_safety" value="0.1*mm"/>
 
         <include ref="${DD4hepINSTALL}/DDDetectors/compact/detector_types.xml"/>

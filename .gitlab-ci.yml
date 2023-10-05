@@ -6,7 +6,7 @@ default:
   image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2204:v33
 
 variables:
-  ACTS_VERSION: v29.1.0
+  ACTS_VERSION: v30.1.0
   ACTS_GIT_URL: https://github.com/acts-project/acts.git
 
 

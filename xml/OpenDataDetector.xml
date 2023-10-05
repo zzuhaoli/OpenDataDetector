@@ -32,7 +32,7 @@
         <include ref="OpenDataBeamPipe.xml"/>
         <include ref="OpenDataTracker.xml"/>
         <include ref="OpenDataSolenoid.xml"/>
-        <!-- include ref="OpenDataCalorimeter.xml"/-->
+        <include ref="OpenDataCalorimeter.xml"/>
 
         <!-- Plugins -->
         <include ref="OpenDataDetectorPlugins.xml"/>

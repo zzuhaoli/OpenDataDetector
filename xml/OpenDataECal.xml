@@ -10,15 +10,14 @@
     </define>
 
     <readouts>
-
         <readout name="ECalBarrelCollection">
             <segmentation type="CartesianGridXY" grid_size_x="ECal_cell_size" grid_size_y="ECal_cell_size" />
-            <id>system:5,side:2,module:8,stave:4,layer:9,submodule:4,x:32:-16,y:-16</id>
+              <id>system:8,barrel:3,module:4,layer:6,slice:5,x:32:-16,y:-16</id>
         </readout>
 
         <readout name="ECalEndcapCollection">
             <segmentation type="CartesianGridXY" grid_size_x="ECal_cell_size" grid_size_y="ECal_cell_size" />
-            <id>system:5,side:2,module:8,stave:4,layer:9,submodule:4,x:32:-16,y:-16</id>
+              <id>system:8,barrel:3,module:4,layer:6,slice:5,x:32:-16,y:-16</id>
         </readout>
 
 
@@ -36,7 +35,7 @@
     </display>
 
     <detectors>
-        <detector name="ECalBarrel" type="ODDECalBarrel" id="ODD_ECalBarrel_ID" readout="ECalBarrelCollection" vis="BlueVis" gap="0.*cm">
+        <detector name="ECalBarrel" type="DD4hep_PolyhedraBarrelCalorimeter2" id="ODD_ECalBarrel_ID" readout="ECalBarrelCollection" vis="BlueVis" gap="0.*cm">
 
             <comment>EM Calorimeter Barrel</comment>
 
@@ -62,7 +61,7 @@
             </layer>
         </detector>
 
-        <detector name="ECalEndcap" type="ODDECalEndcap" id="ODD_ECalEndcap_ID" readout="ECalEndcapCollection" vis="ECALVis">
+        <detector name="ECalEndcap" type="DD4hep_PolyhedraEndcapCalorimeter2"  reflect="true" id="ODD_ECalEndcap_ID" readout="ECalEndcapCollection" vis="ECALVis">
 
             <comment>Electromagnetic Calorimeter Endcap</comment>
 
@@ -77,7 +76,7 @@
             </envelope>
 
 
-            <dimensions nsides_inner="ecal_e_inner_symmetry" nsides_outer="ecal_e_outer_symmetry" zmin="ecal_e_min_z" rmin="ecal_e_inner_radius" rmax="ecal_e_outer_radius"/>
+            <dimensions numsides="ecal_e_symmetry" zmin="ecal_e_min_z" rmin="ecal_e_inner_radius" rmax="ecal_e_outer_radius"/>
 
             <layer repeat="40" vis="ECalLayerVis">
                 <slice material = "TungstenDens24" thickness = "1.90*mm" vis="ECalAbsorberVis" radiator="yes"/>
@@ -111,7 +110,7 @@
 	        <argument value="zpos=ecal_e_min_z"    />
 	        <argument value="radius=ecal_e_outer_radius"  />
 	        <argument value="phi0=0"    />
-	        <argument value="symmetry=ecal_e_outer_symmetry"/>
+	        <argument value="symmetry=ecal_e_symmetry"/>
 	        <argument value="systemID=ODD_ECalEndcap_ID"/>
 	  </plugin>
     </plugins>
