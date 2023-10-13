@@ -6,14 +6,14 @@ default:
   image: gitlab-registry.cern.ch/acts/opendatadetector/ubuntu2204:v33
 
 variables:
-  ACTS_VERSION: v30.1.0
+  ACTS_VERSION: v30.2.0
   ACTS_GIT_URL: https://github.com/acts-project/acts.git
 
 
 build-acts:
   stage: build
   cache:
-    key: "acts_${ACTS_VERSION}_v2"
+    key: "acts_${ACTS_VERSION}_v1"
     policy: pull-push
     paths: 
       - acts-install
