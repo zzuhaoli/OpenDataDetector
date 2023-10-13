@@ -31,49 +31,61 @@ args.output.mkdir(parents=True, exist_ok=True)
 
 rf = uproot.open(args.input)
 
-names = {
+tracker = {
     "beampipe": "Beam pipe",
+    "pixel": "Pixel",
     "sstrips": "Short Strips",
     "lstrips": "Long Strips",
-    "pixel": "Pixel",
     "solenoid": "Solenoid",
-    "ecal": "EM Calorimeter"
 }
 
-for q in (
-    "x0", 
-    "l0",
-):
-    for qq in ("phi", "eta"):
-        h = None
-        hists = []
-        labels = []
-        detector = None
-        for k in rf:
-            name, _ = k.split(";", 1)
-            if not name.endswith("all"): continue
-            if not q in name: continue
-            if not qq in name: continue
-            if name.startswith("detector"):
-                detector = values.copy()
-                continue
+calo = {
+    "ecalbarrel": "EMCal barrel",
+    "ecalendcap": "EMCal endcap",
+}
 
-            o = rf[k].to_hist()
-            o.axes[0].label = qq
-            hists.append(o)
-            l, _ = k.split("_", 1)
-            l = names[l]
-            labels.append(l)
-            
-        fig, ax = plt.subplots()
-        mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels)
-        ymin, ymax = ax.get_ylim()
-        ax.set_ylim(top=1.2*ymax)
-        ax.legend(ncol=3)
+for group, names in [
+    ("tracker_", {**tracker}),
+    ("calo_", {**calo}),
+    ("", {**tracker, **calo}),
+]:
+    for q in (
+        "x0", 
+        "l0",
+    ):
+        for qq in ("phi", "eta"):
+            h = None
+            hists = {}
+            labels = []
+            detector = None
+            for k in rf:
+                name, _ = k.split(";", 1)
+                if not name.endswith("all"): continue
+                if not q in name: continue
+                if not qq in name: continue
+                if name.startswith("detector"):
+                    detector = values.copy()
+                    continue
 
-        ylab = {"l0": "\lambda_0", "x0": "X_0"}[q]
-        ax.set_ylabel(rf"${ylab}$")
-        ax.set_xlim(hists[0].axes[0].edges[0], hists[0].axes[0].edges[-1])
-        
-        fig.savefig(args.output / f"{q}_vs_{qq}.pdf")
+                o = rf[k].to_hist()
+                o.axes[0].label = qq
+                l, _ = k.split("_", 1)
+                if not l in names:
+                    continue
+                hists[l] = o
+                l = names[l]
+
+            labels = [v for k, v in names.items() if k in hists]
+            hists = [hists[k] for k in names.keys() if k in hists]
+                
+            fig, ax = plt.subplots()
+            mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels)
+            ymin, ymax = ax.get_ylim()
+            ax.set_ylim(top=1.2*ymax)
+            ax.legend(ncol=3)
+
+            ylab = {"l0": "\lambda_0", "x0": "X_0"}[q]
+            ax.set_ylabel(rf"${ylab}$")
+            ax.set_xlim(hists[0].axes[0].edges[0], hists[0].axes[0].edges[-1])
+            fig.savefig(args.output / f"{group}{q}_vs_{qq}.pdf")
 
