@@ -35,5 +35,7 @@
         <include ref="OpenDataCalorimeter.xml"/>
 
         <!-- Plugins -->
-        <include ref="OpenDataDetectorPlugins.xml"/>
+        <plugins>
+                <include ref="OpenDataDetectorPlugins.xml" />
+        </plugins>
 </lccdd>
