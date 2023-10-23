@@ -157,6 +157,28 @@ run-ddsim:
     - source /usr/local/bin/thisdd4hep.sh
     - python3 $(which ddsim) --enableGun --numberOfEvents 100 --gun.thetaMin 0.1415 --gun.thetaMax 3.0  --gun.distribution uniform --compactFile xml/OpenDataDetector.xml --outputFile ddsim.root
 
+check-overlaps:
+  stage: test
+  needs:
+    - build-odd
+  artifacts:
+    paths:
+      - check_overlaps
+    expire_in: 1 month
+    when: always
+  script:
+    - source odd-install/bin/this_odd.sh
+    - /usr/local/bin/geant4-config --install-datasets
+    - source /usr/local/bin/geant4.sh
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir check_overlaps
+    - cd check_overlaps
+    - python3 $(which checkOverlaps) -c ../xml/OpenDataDetector.xml -t 0.01 >out 2> err
+    - >
+      export FAIL=`cat err | sed -n 's/.*Number of illegal overlaps\/extrusions : //p'`
+    - echo $FAIL
+    - if [ "$FAIL" -gt 0 ]; then exit 1; fi
+
 export-geometry:
   stage: test
   needs:
