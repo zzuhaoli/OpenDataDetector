@@ -108,7 +108,7 @@ run-material-composition:
     - ci/make_detector_plot.py ci/composition_config.json plots/layout.pdf
     - ci/material_composition.sh g4/geant4_material_tracks.root plots/material_composition.root
     - source /usr/local/bin/thisroot.sh
-    - ci/make_material_plots.py plots/material_composition.root plots
+    - ci/make_material_plots.py plots/material_composition.root ci/composition_config.json plots
     - >
       histcmp 
       --label-reference $(cat ci/reference/commit.txt) 
@@ -136,7 +136,7 @@ run-material-budget-dd4hep:
     - ci/material_budget_dd4hep.sh plots_dd4hep
     - pip install -r ci/requirements.txt
     - source /usr/local/bin/thisroot.sh
-    - ci/make_material_plots.py plots_dd4hep/material_budget_results.root plots_dd4hep
+    - ci/make_material_plots.py plots_dd4hep/material_budget_results.root ci/composition_config.json plots_dd4hep
     - >
       histcmp
       --label-reference $(cat ci/reference/commit.txt)

@@ -35,12 +35,8 @@ names = {
     "ecalendcap": "EMCal endcap",
 }
 
-
-colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-
 with args.config.open() as f:
     config = json.load(f)
-
 
 zmax = float("-inf")
 zmin = float("inf")
@@ -52,14 +48,14 @@ ax.set_ylabel("r [mm]")
 
 labels = set()
 
-for color, (key, boxes) in zip(colors, config.items()):
+for key, boxes in config.items():
 
     for box in boxes:
         label = names[key] if key not in labels else None
         labels.add(key)
         ax.add_patch(Rectangle((box["zmin"], box["rmin"]), 
                                box["zmax"]-box["zmin"], 
-                               box["rmax"]-box["rmin"], fc=color, label=label))
+                               box["rmax"]-box["rmin"], fc=box["colour"], label=label))
 
         zmax = max(zmax, box["zmax"])
         zmin = min(zmin, box["zmin"])

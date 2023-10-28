@@ -8,6 +8,7 @@ import hist
 import mplhep
 import argparse
 from pathlib import Path
+import json
 
 plt.rcParams["ytick.right"] = plt.rcParams["xtick.top"] = True
 plt.rcParams["xtick.direction"] = "in"
@@ -24,6 +25,7 @@ plt.rcParams["legend.handlelength"] = 1.0
 
 parser = argparse.ArgumentParser(description="Make material composition plots")
 parser.add_argument("input", help="Input root file with histograms")
+parser.add_argument("config", type=Path, help="Input config file with colours")
 parser.add_argument("output", type=Path, help="Output directory for plots")
 args = parser.parse_args()
 
@@ -43,6 +45,10 @@ calo = {
     "ecalbarrel": "EMCal barrel",
     "ecalendcap": "EMCal endcap",
 }
+
+with args.config.open() as f:
+    config = json.load(f)
+configcolours = {det: config[det][0]["colour"] for det in config.keys() }
 
 for group, names in [
     ("tracker_", {**tracker}),
@@ -76,10 +82,11 @@ for group, names in [
                 l = names[l]
 
             labels = [v for k, v in names.items() if k in hists]
+            colours  = [configcolours[k] for k in names.keys() if k in hists]
             hists = [hists[k] for k in names.keys() if k in hists]
                 
             fig, ax = plt.subplots()
-            mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels)
+            mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels, color=colours)
             ymin, ymax = ax.get_ylim()
             ax.set_ylim(top=1.2*ymax)
             ax.legend(ncol=3)
