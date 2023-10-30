@@ -207,7 +207,7 @@ export-geometry:
     - node . ../export_geometry/ODD.root -c ../ci/export_geometry_config.json
     - mv ODD.gltf ../export_geometry/.
 
-upload-display:
+pages:deploy:
   stage: test
   needs:
     - export-geometry
