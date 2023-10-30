@@ -199,12 +199,33 @@ export-geometry:
     - git clone https://github.com/kjvbrt/root2gltf.git
     - cd root2gltf
     - git checkout 3b263d0eda2d245c81316d2dd12303761a78f002
-    - curl -sL https://deb.nodesource.com/setup_16.x -o /tmp/nodesource_setup.sh
-    - bash /tmp/nodesource_setup.sh
+    - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_16.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+    - apt-get update
     - apt-get install -y nodejs libxi-dev libglu1-mesa-dev libglew-dev pkg-config
     - npm ci
     - node . ../export_geometry/ODD.root -c ../ci/export_geometry_config.json
     - mv ODD.gltf ../export_geometry/.
+
+upload-display:
+  stage: test
+  needs:
+    - export-geometry
+  artifacts:
+    paths:
+      - public
+  script:
+    - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+    - apt-get update
+    - apt-get install -y nodejs build-essential libxi-dev libglu1-mesa-dev libglew-dev pkg-config libpango1.0-dev libgif-dev python-is-python3
+    - npm install -g yarn
+    - git clone https://github.com/acts-project/odd-phoenix.git -b updated phoenix
+    - cd phoenix
+    - yarn
+    - cp ../export_geometry/ODD.gltf src/assets/geometry/ODD.gltf
+    - yarn deploy
+    - mv docs ../public
 
 simulate-ecal-barrel:
   stage: analysis
