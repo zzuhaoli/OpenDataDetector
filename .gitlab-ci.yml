@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - analysis
+  - deploy
 
 default:
   image: ghcr.io/acts-project/ubuntu2204:v35
@@ -207,13 +208,15 @@ export-geometry:
     - node . ../export_geometry/ODD.root -c ../ci/export_geometry_config.json
     - mv ODD.gltf ../export_geometry/.
 
-pages:deploy:
-  stage: test
+pages:
+  stage: deploy
   needs:
     - export-geometry
   artifacts:
     paths:
       - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
