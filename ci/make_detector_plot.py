@@ -31,8 +31,10 @@ names = {
     "lstrips": "Long Strips",
     "pixel": "Pixel",
     "solenoid": "Solenoid",
-    "ecalbarrel": "EMCal barrel",
-    "ecalendcap": "EMCal endcap",
+    "ecalbarrel": "ECal barrel",
+    "ecalendcap": "ECal endcap",
+    "hcalbarrel": "HCal barrel",
+    "hcalendcap": "HCal endcap",
 }
 
 with args.config.open() as f:

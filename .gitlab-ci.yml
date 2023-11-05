@@ -119,34 +119,6 @@ run-material-composition:
       plots/material_composition.root
       ci/reference/material_composition.root
 
-run-material-budget-dd4hep:
-  stage: test
-  needs:
-    - build-odd
-  artifacts:
-    paths:
-      - plots_dd4hep
-    expire_in: 1 month
-    when: always
-  script:
-    - source odd-install/bin/this_odd.sh
-    - /usr/local/bin/geant4-config --install-datasets
-    - source /usr/local/bin/geant4.sh
-    - source /usr/local/bin/thisdd4hep.sh
-    - mkdir plots_dd4hep
-    - ci/material_budget_dd4hep.sh plots_dd4hep
-    - pip install -r ci/requirements.txt
-    - source /usr/local/bin/thisroot.sh
-    - ci/make_material_plots.py plots_dd4hep/material_budget_results.root ci/composition_config.json plots_dd4hep
-    - >
-      histcmp
-      --label-reference $(cat ci/reference/commit.txt)
-      --label-monitored $CI_COMMIT_SHORT_SHA
-      --title "ODD material composition"
-      -o plots_dd4hep/material.html
-      plots_dd4hep/material_budget_results.root
-      ci/reference/material_budget_dd4hep.root
-
 run-ddsim:
   stage: test
   needs:
@@ -247,12 +219,12 @@ simulate-ecal-barrel:
     - source /usr/local/bin/thisdd4hep.sh
     - mkdir analysis_ecal_barrel
     - cd analysis_ecal_barrel
-    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY --gun.particle gamma --gun.thetaMin 1.57 --gun.thetaMax 1.57 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_gamma_theta1.57_${NUMEVENTS}events_${ENERGY}MeV_edm4hep.root
+    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY*GeV --gun.particle gamma --gun.thetaMin 1.57 --gun.thetaMax 1.57 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_gamma_theta1.57_${NUMEVENTS}events_${ENERGY}GeV_edm4hep.root
   parallel:
     matrix:
-      - ENERGY: [5000, 10000, 20000, 50000]
+      - ENERGY: [5, 10, 20, 50]
         NUMEVENTS: [1000]
-      - ENERGY: [100000]
+      - ENERGY: [100]
         NUMEVENTS: [500]
 
 validate-ecal-barrel:
@@ -261,18 +233,19 @@ validate-ecal-barrel:
     - simulate-ecal-barrel
   artifacts:
     paths:
-      - analysis_ecal_barrel
+      - analysis_ecal_barrel/validation
     expire_in: 1 month
     when: always
   when: always
   script:
     - source /usr/local/bin/thisdd4hep.sh
-    - cd analysis_ecal_barrel
+    - mkdir analysis_ecal_barrel/validation
+    - cd analysis_ecal_barrel/validation
     - ls
-    - pip install -r ../ci/requirements.txt
-    - find . -type f -name '*edm4hep.root' -exec sh -c 'python3 ../ci/analyse_single_shower.py -i {} -o "$(basename {} edm4hep.root)"results.root'  \;
-    - python3 ../ci/analyse_combine_showers.py -i *_results.root -o combined_performance.root
-    - python3 ../ci/graphCmp.py -i combined_performance.root ../ci/reference/combined_performance_ECalBarrel.root -l MR reference
+    - pip install -r ../../ci/requirements.txt
+    - find .. -type f -name '*edm4hep.root' -exec sh -c 'python3 ../../ci/analyse_single_shower.py -i {} -o "$(basename {} edm4hep.root)"results.root'  \;
+    - python3 ../../ci/analyse_combine_showers.py -i *_results.root -o combined_performance.root
+    - python3 ../../ci/graphCmp.py -i combined_performance.root ../../ci/reference/combined_performance_ECalBarrel.root -l MR reference
 
 simulate-ecal-rightEndcap:
   stage: analysis
@@ -291,12 +264,12 @@ simulate-ecal-rightEndcap:
     - source /usr/local/bin/thisdd4hep.sh
     - mkdir analysis_ecal_rightEndcap
     - cd analysis_ecal_rightEndcap
-    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY --gun.particle gamma --gun.thetaMin 0.15 --gun.thetaMax 0.15 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_gamma_theta0.15_${NUMEVENTS}events_${ENERGY}MeV_edm4hep.root
+    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY*GeV --gun.particle gamma --gun.thetaMin 0.24 --gun.thetaMax 0.24 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_gamma_theta0.24_${NUMEVENTS}events_${ENERGY}GeV_edm4hep.root
   parallel:
     matrix:
-      - ENERGY: [5000, 10000, 20000]
+      - ENERGY: [5, 10, 20]
         NUMEVENTS: [500]
-      - ENERGY: [50000, 100000]
+      - ENERGY: [50, 100]
         NUMEVENTS: [250]
 
 validate-ecal-rightEndcap:
@@ -305,17 +278,18 @@ validate-ecal-rightEndcap:
     - simulate-ecal-rightEndcap
   artifacts:
     paths:
-      - analysis_ecal_rightEndcap
+      - analysis_ecal_rightEndcap/validation
     expire_in: 1 month
     when: always
   when: always
   script:
     - source /usr/local/bin/thisdd4hep.sh
-    - cd analysis_ecal_rightEndcap
-    - pip install -r ../ci/requirements.txt
-    - find . -type f -name '*edm4hep.root' -exec sh -c 'python3 ../ci/analyse_single_shower.py -i {} -o "$(basename {} edm4hep.root)"results.root --endcap'  \;
-    - python3 ../ci/analyse_combine_showers.py --endcap -i *_results.root -o combined_performance.root
-    - python3 ../ci/graphCmp.py -i combined_performance.root ../ci/reference/combined_performance_ECalEndcap.root -l MR reference
+    - mkdir analysis_ecal_rightEndcap/validation
+    - cd analysis_ecal_rightEndcap/validation
+    - pip install -r ../../ci/requirements.txt
+    - find .. -type f -name '*edm4hep.root' -exec sh -c 'python3 ../../ci/analyse_single_shower.py --endcap -i {} -o "$(basename {} edm4hep.root)"results.root --endcap'  \;
+    - python3 ../../ci/analyse_combine_showers.py --endcap -i *_results.root -o combined_performance.root
+    - python3 ../../ci/graphCmp.py -i combined_performance.root ../../ci/reference/combined_performance_ECalEndcap.root -l MR reference
 
 simulate-ecal-leftEndcap:
   stage: analysis
@@ -334,12 +308,12 @@ simulate-ecal-leftEndcap:
     - source /usr/local/bin/thisdd4hep.sh
     - mkdir analysis_ecal_leftEndcap
     - cd analysis_ecal_leftEndcap
-    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY --gun.particle gamma --gun.thetaMin -0.15 --gun.thetaMax -0.15 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_gamma_thetaM0.15_${NUMEVENTS}events_${ENERGY}MeV_edm4hep.root
+    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY*GeV --gun.particle gamma --gun.thetaMin -0.24 --gun.thetaMax -0.24 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_gamma_thetaM0.24_${NUMEVENTS}events_${ENERGY}GeV_edm4hep.root
   parallel:
     matrix:
-      - ENERGY: [5000, 10000, 20000]
+      - ENERGY: [5, 10, 20]
         NUMEVENTS: [500]
-      - ENERGY: [50000, 100000]
+      - ENERGY: [50, 100]
         NUMEVENTS: [250]
 
 validate-ecal-leftEndcap:
@@ -348,14 +322,152 @@ validate-ecal-leftEndcap:
     - simulate-ecal-leftEndcap
   artifacts:
     paths:
-      - analysis_ecal_leftEndcap
+      - analysis_ecal_leftEndcap/validation
     expire_in: 1 month
     when: always
   when: always
   script:
     - source /usr/local/bin/thisdd4hep.sh
-    - cd analysis_ecal_leftEndcap
-    - pip install -r ../ci/requirements.txt
-    - find . -type f -name '*edm4hep.root' -exec sh -c 'python3 ../ci/analyse_single_shower.py -i {} -o "$(basename {} edm4hep.root)"results.root --endcap'  \;
-    - python3 ../ci/analyse_combine_showers.py --endcap -i *_results.root -o combined_performance.root
-    - python3 ../ci/graphCmp.py -i combined_performance.root ../ci/reference/combined_performance_ECalEndcap.root -l MR reference
+    - mkdir analysis_ecal_leftEndcap/validation
+    - cd analysis_ecal_leftEndcap/validation
+    - pip install -r ../../ci/requirements.txt
+    - find .. -type f -name '*edm4hep.root' -exec sh -c 'python3 ../../ci/analyse_single_shower.py --endcap -i {} -o "$(basename {} edm4hep.root)"results.root --endcap'  \;
+    - python3 ../../ci/analyse_combine_showers.py --endcap -i *_results.root -o combined_performance.root
+    - python3 ../../ci/graphCmp.py -i combined_performance.root ../../ci/reference/combined_performance_ECalEndcap.root -l MR reference
+
+simulate-hcal-barrel:
+  stage: analysis
+  needs:
+    - build-odd
+  artifacts:
+    paths:
+      - analysis_hcal_barrel
+    expire_in: 1 month
+    when: always
+  when: always
+  script:
+    - source odd-install/bin/this_odd.sh
+    - /usr/local/bin/geant4-config --install-datasets
+    - source /usr/local/bin/geant4.sh
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir analysis_hcal_barrel
+    - cd analysis_hcal_barrel
+    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY*GeV --gun.particle pi- --gun.thetaMin 1.57 --gun.thetaMax 1.57 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_pion_theta1.57_${NUMEVENTS}events_${ENERGY}GeV_edm4hep.root
+  parallel:
+    matrix:
+      - ENERGY: [5, 10, 20]
+        NUMEVENTS: [5000]
+      - ENERGY: [50]
+        NUMEVENTS: [1000]
+      - ENERGY: [100]
+        NUMEVENTS: [500]
+
+validate-hcal-barrel:
+  stage: analysis
+  needs:
+    - simulate-hcal-barrel
+  artifacts:
+    paths:
+      - analysis_hcal_barrel/validation
+    expire_in: 1 month
+    when: always
+  when: always
+  script:
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir analysis_hcal_barrel/validation
+    - cd analysis_hcal_barrel/validation
+    - ls
+    - pip install -r ../../ci/requirements.txt
+    - find .. -type f -name '*edm4hep.root' -exec sh -c 'python3 ../../ci/analyse_single_shower.py --hcal -i {} -o "$(basename {} edm4hep.root)"results.root'  \;
+    - python3 ../../ci/analyse_combine_showers.py -i *_results.root -o combined_performance.root
+
+simulate-hcal-rightEndcap:
+  stage: analysis
+  needs:
+    - build-odd
+  artifacts:
+    paths:
+      - analysis_hcal_rightEndcap
+    expire_in: 1 month
+    when: always
+  when: always
+  script:
+    - source odd-install/bin/this_odd.sh
+    - /usr/local/bin/geant4-config --install-datasets
+    - source /usr/local/bin/geant4.sh
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir analysis_hcal_rightEndcap
+    - cd analysis_hcal_rightEndcap
+    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY*GeV --gun.particle pi- --gun.thetaMin 0.24 --gun.thetaMax 0.24 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_pion_theta0.24_${NUMEVENTS}events_${ENERGY}GeV_edm4hep.root
+  parallel:
+    matrix:
+      - ENERGY: [5, 10]
+        NUMEVENTS: [5000]
+      - ENERGY: [20, 50]
+        NUMEVENTS: [1000]
+      - ENERGY: [100]
+        NUMEVENTS: [500]
+
+validate-hcal-rightEndcap:
+  stage: analysis
+  needs:
+    - simulate-hcal-rightEndcap
+  artifacts:
+    paths:
+      - analysis_hcal_rightEndcap/validation
+    expire_in: 1 month
+    when: always
+  when: always
+  script:
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir analysis_hcal_rightEndcap/validation
+    - cd analysis_hcal_rightEndcap/validation
+    - pip install -r ../../ci/requirements.txt
+    - find .. -type f -name '*edm4hep.root' -exec sh -c 'python3 ../../ci/analyse_single_shower.py --hcal --endcap -i {} -o "$(basename {} edm4hep.root)"results.root --endcap'  \;
+    - python3 ../../ci/analyse_combine_showers.py --endcap -i *_results.root -o combined_performance.root
+
+simulate-hcal-leftEndcap:
+  stage: analysis
+  needs:
+    - build-odd
+  artifacts:
+    paths:
+      - analysis_hcal_leftEndcap
+    expire_in: 1 month
+    when: always
+  when: always
+  script:
+    - source odd-install/bin/this_odd.sh
+    - /usr/local/bin/geant4-config --install-datasets
+    - source /usr/local/bin/geant4.sh
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir analysis_hcal_leftEndcap
+    - cd analysis_hcal_leftEndcap
+    - ddsim --enableGun --numberOfEvents $NUMEVENTS --gun.energy $ENERGY*GeV --gun.particle pi- --gun.thetaMin -0.24 --gun.thetaMax -0.24 --gun.distribution uniform --compactFile ../xml/OpenDataDetector.xml --outputFile ODD_pion_thetaM0.24_${NUMEVENTS}events_${ENERGY}GeV_edm4hep.root
+  parallel:
+    matrix:
+      - ENERGY: [5, 10]
+        NUMEVENTS: [2500]
+      - ENERGY: [20, 50]
+        NUMEVENTS: [1000]
+      - ENERGY: [100]
+        NUMEVENTS: [500]
+
+validate-hcal-leftEndcap:
+  stage: analysis
+  needs:
+    - simulate-hcal-leftEndcap
+  artifacts:
+    paths:
+      - analysis_hcal_leftEndcap/validation
+    expire_in: 1 month
+    when: always
+  when: always
+  script:
+    - source /usr/local/bin/thisdd4hep.sh
+    - mkdir analysis_hcal_leftEndcap/validation
+    - cd analysis_hcal_leftEndcap/validation
+    - pip install -r ../../ci/requirements.txt
+    - find .. -type f -name '*edm4hep.root' -exec sh -c 'python3 ../../ci/analyse_single_shower.py --hcal --endcap -i {} -o "$(basename {} edm4hep.root)"results.root --endcap'  \;
+    - python3 ../../ci/analyse_combine_showers.py --endcap -i *_results.root -o combined_performance.root
+    

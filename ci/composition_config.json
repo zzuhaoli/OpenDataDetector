@@ -14,7 +14,7 @@
       "rmax": 200,
       "zmin": -2400,
       "zmax": 2400,
-      "colour": "#86c8dd"
+      "colour": "#add1e7"
     }
   ],
   "sstrips": [
@@ -23,7 +23,7 @@
       "rmax": 720,
       "zmin": -3150,
       "zmax": 3150,
-      "colour": "#578dff"
+      "colour": "#0bb3fa"
     }
   ],
   "lstrips": [
@@ -32,7 +32,7 @@
       "rmax": 1140,
       "zmin": -3150,
       "zmax": 3150,
-      "colour": "#1845fb"
+      "colour": "#6261eb"
     }
   ],
   "solenoid": [
@@ -50,7 +50,7 @@
       "rmax": 1500,
       "zmin": -3050,
 	    "zmax": 3050,
-      "colour": "#ff5e02"
+      "colour": "#df1c22"
     }
   ],
   "ecalendcap": [
@@ -59,14 +59,39 @@
       "rmax": 1500,
       "zmin": 3200,
       "zmax": 3450,
-      "colour": "#c91f16"
+      "colour": "#fd8c14"
     },
     {
       "rmin": 315,
       "rmax": 1540,
       "zmin": -3450,
 	    "zmax": -3200,
-      "colour": "#c91f16"
+      "colour": "#fd8c14"
+    }
+  ],
+  "hcalbarrel": [
+    {
+      "rmin": 1600,
+      "rmax": 3436,
+      "zmin": -3450,
+      "zmax": 3450,
+      "colour": "#96208e"
+    }
+  ],
+  "hcalendcap": [
+    {
+      "rmin": 355,
+      "rmax": 3436,
+      "zmin": 3600,
+      "zmax": 5436,
+      "colour": "#a56ea5"
+    },
+    {
+      "rmin": 355,
+      "rmax": 3436,
+      "zmin": -5436,
+      "zmax": -3600,
+      "colour": "#a56ea5"
     }
   ]
 }

@@ -8,7 +8,8 @@
       "Tracker > shortStrips" : [["ShortStrips_3"], true],
       "Tracker > longStrips" : [["LongStrips_4"], true],
       "Solenoid" : [["Solenoid_5"], true],
-      "ECal" : [["ECal_6"], true]
+      "ECal" : [["ECal_6"], true],
+      "HCal" : [["HCal_7"], true]
   },
   "maxLevel": 4
 }

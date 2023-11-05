@@ -42,8 +42,10 @@ tracker = {
 }
 
 calo = {
-    "ecalbarrel": "EMCal barrel",
-    "ecalendcap": "EMCal endcap",
+    "ecalbarrel": "ECal barrel",
+    "ecalendcap": "ECal endcap",
+    "hcalbarrel": "HCal barrel",
+    "hcalendcap": "HCal endcap",
 }
 
 with args.config.open() as f:
@@ -91,7 +93,7 @@ for group, names in [
             ax.set_ylim(top=1.2*ymax)
             ax.legend(ncol=3)
 
-            ylab = {"l0": "\lambda_0", "x0": "X_0"}[q]
+            ylab = {"l0": "\lambda_i", "x0": "X_0"}[q]
             ax.set_ylabel(rf"${ylab}$")
             ax.set_xlim(hists[0].axes[0].edges[0], hists[0].axes[0].edges[-1])
             fig.savefig(args.output / f"{group}{q}_vs_{qq}.pdf")

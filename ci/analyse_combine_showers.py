@@ -91,7 +91,7 @@ def run(inputlist, outname):
     print(samplingString)
 
     # Fit linearity
-    f_fitLinearity = ROOT.TF1("inearity", "pol0", g_linearity.GetXaxis().GetXmin(), g_linearity.GetXaxis().GetXmax())
+    f_fitLinearity = ROOT.TF1("linearity", "pol0", g_linearity.GetXaxis().GetXmin(), g_linearity.GetXaxis().GetXmax())
     resultLin = g_linearity.Fit(f_fitLinearity, 'S')
     formulaLin = "#sum_{cells}dE/E_{MC} = " + str(round(resultLin.Get().Parameter(0)*100,2))+"% #pm "+str(round(resultLin.Get().Error(0),4))
     print(formulaLin)
@@ -103,7 +103,7 @@ def run(inputlist, outname):
     if not args.endcap:
         eta = 0
     else:
-        eta = 2
+        eta = 2.1
     if not args.hcal:
         calo_type = "ECal resolution, photons"
     else:
@@ -115,7 +115,8 @@ def run(inputlist, outname):
     c_lin = prepare_single_canvas("linearity","Energy linearity")
     prepare_graph(g_linearity, "linearity", ";E_{MC} (GeV);#LTE_{sim}#GT/E_{MC}", 9, 21)
     g_linearity.Draw("ape")
-    draw_text([calo_type + " at #||{#eta}="+str(eta)], [0.55,0.93,0.88,0.98], 1, 0).SetTextSize(0.05)
+    calo_type_lin = calo_type.replace("resolution", "linearity")
+    draw_text([calo_type_lin + " at #||{#eta}="+str(eta)], [0.55,0.93,0.88,0.98], 1, 0).SetTextSize(0.05)
     draw_text([formulaLin], [0.55,0.8,0.88,0.9], 1, 0).SetTextSize(0.05)
 
     # Store

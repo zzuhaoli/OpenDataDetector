@@ -1,7 +1,7 @@
 <lccdd>
 
-    <info name="Open Data Detector - ECal Barrel" title="Open Data Detector - ECal Barrel" author="Erica.Brondolin@cern.ch" url="" status="alpha" version="0">
-        <comment>ECal Barrel Detector from lceo (FCCee_o1_v03/ECalBarrel_o2_v01_03.xml)</comment>
+    <info name="Open Data Detector - ECal" title="Open Data Detector - ECal" author="Erica.Brondolin@cern.ch" url="" status="alpha" version="0">
+        <comment>ECal Barrel Detector inspired by DD4hep/DDDetectors and lceo (FCCee_o1_v03/ECalBarrel_o2_v01_03.xml)</comment>
     </info>
 
     <!--  Definition of the readout segmentation  -->

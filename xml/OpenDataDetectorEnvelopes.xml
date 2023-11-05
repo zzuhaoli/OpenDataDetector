@@ -48,12 +48,23 @@
         <constant name="ecal_b_rmax" value="1500.*mm"/>
         <constant name="ecal_b_hlength" value="3.05*m"/>
         <constant name="ecal_b_symmetry" value="16"/>
-        <constant name="ecal_e_inner_radius" value="340.*mm"/>
+        <constant name="ecal_e_inner_radius" value="315.*mm"/>
         <constant name="ecal_e_outer_radius" value="1500.*mm"/>
         <constant name="ecal_e_min_z" value="3.2*m"/>
         <constant name="ecal_e_max_z" value="3.45*m"/>
         <constant name="ecal_e_symmetry" value="16"/>
         <constant name="ecal_e_env_safety" value="0.1*mm"/>
+        <!--Dimension of the HCal -->
+        <constant name="hcal_b_rmax" value="3436.*mm"/>
+        <constant name="hcal_b_rmin" value="1600.*mm"/>
+        <constant name="hcal_b_hlength" value="3.45*m"/>
+        <constant name="hcal_b_symmetry" value="16"/>
+        <constant name="hcal_e_inner_radius" value="355.*mm"/>
+        <constant name="hcal_e_outer_radius" value="3436.*mm"/>
+        <constant name="hcal_e_min_z" value="3.6*m"/>
+        <constant name="hcal_e_max_z" value="5.436*m"/>
+        <constant name="hcal_e_symmetry" value="16"/>
+        <constant name="hcal_e_env_safety" value="0.1*mm"/>
 
         <include ref="${DD4hepINSTALL}/DDDetectors/compact/detector_types.xml"/>
     </define>
