@@ -84,7 +84,7 @@ oddMaterialDeco = acts.IMaterialDecorator.fromFile(oddMaterialMap)
 detector, trackingGeometry, decorators = getOpenDataDetector(
     geoDir, mdecorator=oddMaterialDeco
 )
-field = acts.ConstantBField(acts.Vector3(0.0, 0.0, 2.0 * u.T))
+field = detector.field
 rnd = acts.examples.RandomNumbers(seed=42)
 
 s = acts.examples.Sequencer(
