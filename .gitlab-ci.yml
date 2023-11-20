@@ -61,6 +61,7 @@ run-full-chain:
     paths:
       - full_chain
     expire_in: 1 month
+    expose_as: ACTS full chain output
     when: always
   script:
     - ls -al acts-install/python
@@ -94,6 +95,7 @@ run-material-composition:
     paths:
       - plots
     expire_in: 1 month
+    expose_as: Material composition
     when: always
   script:
     - source acts-install/bin/this_acts.sh
@@ -185,6 +187,7 @@ pages:
   needs:
     - export-geometry
   artifacts:
+    expose_as: Geometry output
     paths:
       - public
   rules:
@@ -235,6 +238,7 @@ validate-ecal-barrel:
     paths:
       - analysis_ecal_barrel/validation
     expire_in: 1 month
+    expose_as: ECAL validation barrel
     when: always
   when: always
   script:
@@ -280,6 +284,7 @@ validate-ecal-rightEndcap:
     paths:
       - analysis_ecal_rightEndcap/validation
     expire_in: 1 month
+    expose_as: ECAL right-endcap validation
     when: always
   when: always
   script:
@@ -324,6 +329,7 @@ validate-ecal-leftEndcap:
     paths:
       - analysis_ecal_leftEndcap/validation
     expire_in: 1 month
+    expose_as: ECAL left-endcap validation
     when: always
   when: always
   script:
