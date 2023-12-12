@@ -1,6 +1,7 @@
 <lccdd>
 
     <include ref="OpenDataPixels.xml"/>
+    <include ref="OpenDataDC.xml"/>
 
     <detectors>
         <detector id="ODD_Pixel_ID" name="Pixels" type="DD4hep_SubdetectorAssembly" vis="invisible">
@@ -15,7 +16,7 @@
                 <layer_material surface="representing" binning="binPhi,binZ" bins0="mat_pst_bPhi" bins1="mat_pst_bZ"/>
             </tubs>
         </detector>
-
+    </detectors>
   <plugins>
     <plugin name="DD4hep_ParametersPlugin">
       <argument value="PST"/>
