@@ -18,6 +18,8 @@
     <constant name="ODD_LongStripEndcapN_ID" value="13"/>
     <constant name="ODD_LongStripBarrel_ID" value="12"/>
     <constant name="ODD_LongStripEndcapP_ID" value="14"/>
+    <!-- DC Identifier -->
+    <constant name="ODD_DC_ID" value="32"/>
     <!-- Solenoid Identifiers -->
     <constant name="ODD_Solenoid_ID" value="5"/>
     <!-- ECal Identifiers -->

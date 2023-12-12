@@ -16,6 +16,12 @@
                 <layer_material surface="representing" binning="binPhi,binZ" bins0="mat_pst_bPhi" bins1="mat_pst_bZ"/>
             </tubs>
         </detector>
+        <detector id="ODD_DC_ID" name="DC" type="ODDDriftChamber">
+            <type_flags type="DetType_TRACKER" />
+            <tubs name="DCSupportCylinder" rmin="dc_env_rmin" rmax="dc_env_rmax" dz="dc_env_length" material="CarbonFiber">
+                <layer_material surface="representing" binning="binPhi,binZ" bins0="mat_pst_bPhi" bins1="mat_pst_bZ"/>
+            </tubs>
+        </detector>
     </detectors>
   <plugins>
     <plugin name="DD4hep_ParametersPlugin">

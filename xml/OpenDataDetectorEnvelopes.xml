@@ -39,6 +39,10 @@
         <constant name="ls_e_nz" value="-2.175*m"/>
         <constant name="ls_e_pz" value="2.175*m"/>
         <constant name="ls_e_dz" value="0.975*m"/>
+        <!--Dimensions of the Drift Chamber volume & sub volumes -->
+        <constant name="dc_env_rmin" value="204.*mm"/>
+        <constant name="dc_env_rmax" value="1140.*mm"/>
+        <constant name="dc_env_length" value="3.15*m"/>
         <!--Dimensions of the Solenoid -->
         <constant name="sol_rmin" value="1160.*mm"/>
         <constant name="sol_rmax" value="1200.*mm"/>
