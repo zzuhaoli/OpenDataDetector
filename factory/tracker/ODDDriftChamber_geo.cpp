@@ -8,6 +8,38 @@
 
 using namespace dd4hep;
 
+struct DCSuperLaylerCalculator {
+    // INPUT
+    int superlayer_id;
+    std::string type; // A/U/V
+    int n; // number of layers in the superlayer
+    double rmin; // rmin of the superlayer
+    double rmax; // rmax of the superlayer
+
+    // OUTPUT
+
+    DCSuperLaylerCalculator(int _id, const std::string& _type, int _n, double _rmin, double _rmax)
+    : superlayer_id(_id), type(_type), n(_n), rmin(_rmin), rmax(_rmax) {
+
+    }
+
+    void calc() {
+        // According to the rmin/rmax and n, calculate the size of cell (inner)
+        double cell_size = (rmax-rmin) / n;
+
+    }
+
+    void dump() {
+        std::cout 
+        << "SUPER LAYER [" << superlayer_id << "]"
+        << " type: " << type
+        << " n: " << n
+        << " rmin: " << rmin
+        << " rmax: " << rmax
+        << std::endl;
+    }
+
+};
 
 static Ref_t create_element(Detector &oddd, xml_h xml,
                                 SensitiveDetector sens) {
@@ -42,12 +74,13 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
         for (xml_coll_t superlay(xml, _U(layers)); 
             superlay; ++superlay, ++superlayerNum) {
             xml_comp_t x_superlayer = superlay;
-            std::cout << "SUPER LAYER [" << superlayerNum << "]"
-                      << " type: " << x_superlayer.typeStr()
-                      << " n: " << x_superlayer.number()
-                      << " rmin: " << x_superlayer.rmin()
-                      << " rmax: " << x_superlayer.rmax()
-                      << std::endl;
+
+            DCSuperLaylerCalculator dc_superlayer_calc(superlayerNum,
+                                                       x_superlayer.typeStr(),
+                                                       x_superlayer.number(),
+                                                       x_superlayer.rmin(),
+                                                       x_superlayer.rmax());
+            dc_superlayer_calc.dump();
         }
     }
 
