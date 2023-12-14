@@ -92,11 +92,16 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
     DetElement driftChamberElement(detName, x_det.id());
 
     // Make Volume
-    // Env, A, U, V
+    // - Env
+    // - Sense Wire (A, U, V)
+    // - Field Wire (AF, UF, VF)
     Volume envVolume;
     Volume wireAVolume;
     Volume wireUVolume;
     Volume wireVVolume;
+    Volume wireAFVolume;
+    Volume wireUFVolume;
+    Volume wireVFVolume;
 
     if (x_det.hasChild(_U(tubs))) {
         for (xml_coll_t tub(xml, _U(tubs)); tub; ++tub) {
@@ -113,6 +118,12 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                 wireUVolume = tubeVolume;
             } else if (shapeName == "V") {
                 wireVVolume = tubeVolume;
+            } else if (shapeName == "AF") {
+                wireAFVolume = tubeVolume;
+            } else if (shapeName == "UF") {
+                wireUFVolume = tubeVolume;
+            } else if (shapeName == "VF") {
+                wireVFVolume = tubeVolume;
             }
         }
 
@@ -145,20 +156,28 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
 
             ncells += dcsc.ncells_superlayer;
 
+            // Assume in one superlayer, same sense/field wires are used respectively.
+            // select the sense wire and field wire
+            Volume* signalVolume = nullptr;
+            Volume* fieldVolume = nullptr;
+            if (dcsc.type == "A") {
+                signalVolume = &wireAVolume;
+                fieldVolume = &wireAFVolume;
+            } else if (dcsc.type == "U") {
+                signalVolume = &wireUVolume;
+                fieldVolume = &wireUFVolume;
+            } else if (dcsc.type == "V") {
+                signalVolume = &wireVVolume;
+                fieldVolume = &wireVFVolume;
+            }
+
             // place the wires
             for (int ilayer = 0; ilayer < dcsc.n; ++ilayer) {
                 double start_phi = dcsc.start_phi_vec[ilayer];
                 double signal_wire_r = dcsc.signal_wire_r_vec[ilayer];
 
-                // select the signal wire
-                Volume* signalVolume = nullptr;
-                if (dcsc.type == "A") {
-                    signalVolume = &wireAVolume;
-                } else if (dcsc.type == "U") {
-                    signalVolume = &wireUVolume;
-                } else if (dcsc.type == "V") {
-                    signalVolume = &wireVVolume;
-                }
+                bool is_top_needed = false;
+
 
                 for (int icell = 0; icell < dcsc.ncells_per_layer; ++icell) {
                     double phi = start_phi + icell*dcsc.delta_phi;
@@ -169,6 +188,32 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                     dd4hep::Transform3D tr(dd4hep::Rotation3D(),
                                            dd4hep::Position(x,y,0));
                     dd4hep::PlacedVolume pv = envVolume.placeVolume(*signalVolume, tr);
+
+                    // x: sense; O: wire
+                    //            O   O    Top
+                    //            x   O    Middle
+                    //            O   O    Bottom
+                    //
+                    double cell_size = dcsc.cell_size;
+                    double delta_phi = dcsc.delta_phi;
+
+                    std::vector<double> phiF; // phi of field wire
+                    std::vector<double> rF;   // r of field wire
+                    phiF.push_back(phi); rF.push_back(signal_wire_r-cell_size/2);
+                    phiF.push_back(phi-delta_phi/2); rF.push_back(signal_wire_r-cell_size/2);
+                    phiF.push_back(phi-delta_phi/2); rF.push_back(signal_wire_r);
+                    if (is_top_needed) {
+                        phiF.push_back(phi-delta_phi/2); rF.push_back(signal_wire_r+cell_size/2);
+                        phiF.push_back(phi); rF.push_back(signal_wire_r+cell_size/2);
+                    }
+
+                    for (size_t i = 0; i < phiF.size(); ++i) {
+                        double xF = rF[i] * cos(phiF[i]);
+                        double yF = rF[i] * sin(phiF[i]);
+                        dd4hep::Transform3D trF(dd4hep::Rotation3D(),
+                                                dd4hep::Position(xF,yF,0));
+                        dd4hep::PlacedVolume pvF = envVolume.placeVolume(*fieldVolume, trF);
+                    }
 
                     // debug only
                     if (icell > 10) break;

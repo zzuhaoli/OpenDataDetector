@@ -22,7 +22,7 @@
                   rmin="dc_env_rmin" rmax="dc_env_rmax" dz="dc_env_length" 
                   material="Air" vis="invisible">
             </tubs>
-            <!-- define the three types of signal wires -->
+            <!-- define the three types of sense wires -->
             <tubs name="A" 
                   rmin="0*mm" rmax="1*mm" dz="dc_env_length" 
                   material="CarbonFiber">
@@ -33,6 +33,19 @@
             </tubs>
             <tubs name="V" 
                   rmin="0*mm" rmax="1*mm" dz="dc_env_length" 
+                  material="CarbonFiber" vis="blue">
+            </tubs>
+            <!-- define the three types of field wires -->
+            <tubs name="AF" 
+                  rmin="0*mm" rmax="2*mm" dz="dc_env_length" 
+                  material="CarbonFiber">
+            </tubs>
+            <tubs name="UF" 
+                  rmin="0*mm" rmax="2*mm" dz="dc_env_length" 
+                  material="CarbonFiber" vis="red">
+            </tubs>
+            <tubs name="VF" 
+                  rmin="0*mm" rmax="2*mm" dz="dc_env_length" 
                   material="CarbonFiber" vis="blue">
             </tubs>
             <!-- superlayers -->
