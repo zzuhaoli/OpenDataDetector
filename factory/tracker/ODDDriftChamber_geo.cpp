@@ -102,24 +102,17 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
         for (xml_coll_t tub(xml, _U(tubs)); tub; ++tub) {
             xml_comp_t x_det_tub = tub;
             std::string shapeName = x_det_tub.nameStr();
+            Tube tubeShape(shapeName, x_det_tub.rmin(), x_det_tub.rmax(), x_det_tub.dz());
+            Volume tubeVolume(shapeName, tubeShape, oddd.material(x_det_tub.materialStr()));
+            tubeVolume.setVisAttributes(oddd, x_det_tub.visStr());
             if (shapeName == "DCSupportCylinder") {
-                Tube tubeShape(shapeName, x_det_tub.rmin(), x_det_tub.rmax(),
-                                x_det_tub.dz());
-                Volume tubeVolume(detName, tubeShape,
-                                    oddd.material(x_det_tub.materialStr()));
-                // tubeVolume.setVisAttributes(oddd, x_det.visStr());
                 envVolume = tubeVolume;
             } else if (shapeName == "A") {
-                Tube tubeShape(shapeName, x_det_tub.rmin(), x_det_tub.rmax(),
-                                x_det_tub.dz());
-                Volume tubeVolume(shapeName, tubeShape,
-                                    oddd.material(x_det_tub.materialStr()));
-                tubeVolume.setVisAttributes(oddd, x_det.visStr());
                 wireAVolume = tubeVolume;
             } else if (shapeName == "U") {
-
+                wireUVolume = tubeVolume;
             } else if (shapeName == "V") {
-
+                wireVVolume = tubeVolume;
             }
         }
 
@@ -157,6 +150,16 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                 double start_phi = dcsc.start_phi_vec[ilayer];
                 double signal_wire_r = dcsc.signal_wire_r_vec[ilayer];
 
+                // select the signal wire
+                Volume* signalVolume = nullptr;
+                if (dcsc.type == "A") {
+                    signalVolume = &wireAVolume;
+                } else if (dcsc.type == "U") {
+                    signalVolume = &wireUVolume;
+                } else if (dcsc.type == "V") {
+                    signalVolume = &wireVVolume;
+                }
+
                 for (int icell = 0; icell < dcsc.ncells_per_layer; ++icell) {
                     double phi = start_phi + icell*dcsc.delta_phi;
 
@@ -165,7 +168,7 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
 
                     dd4hep::Transform3D tr(dd4hep::Rotation3D(),
                                            dd4hep::Position(x,y,0));
-                    dd4hep::PlacedVolume pv = envVolume.placeVolume(wireAVolume, tr);
+                    dd4hep::PlacedVolume pv = envVolume.placeVolume(*signalVolume, tr);
 
                     // debug only
                     if (icell > 10) break;
