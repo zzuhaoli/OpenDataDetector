@@ -88,25 +88,50 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
     xml_det_t x_det = xml;
     std::string detName = x_det.nameStr();
 
-    // Make Volume
-    xml_comp_t x_det_tubs = x_det.child(_U(tubs));
-
     // Make DetElement
     DetElement driftChamberElement(detName, x_det.id());
 
-    // Envelope
-    std::string shapeName = x_det_tubs.nameStr();
-    Tube tubeShape(shapeName, x_det_tubs.rmin(), x_det_tubs.rmax(),
-                    x_det_tubs.dz());
-    Volume tubeVolume(detName, tubeShape,
-                        oddd.material(x_det_tubs.materialStr()));
-    tubeVolume.setVisAttributes(oddd, x_det.visStr());
+    // Make Volume
+    // Env, A, U, V
+    Volume envVolume;
+    Volume wireAVolume;
+    Volume wireUVolume;
+    Volume wireVVolume;
+
+    if (x_det.hasChild(_U(tubs))) {
+        for (xml_coll_t tub(xml, _U(tubs)); tub; ++tub) {
+            xml_comp_t x_det_tub = tub;
+            std::string shapeName = x_det_tub.nameStr();
+            if (shapeName == "DCSupportCylinder") {
+                Tube tubeShape(shapeName, x_det_tub.rmin(), x_det_tub.rmax(),
+                                x_det_tub.dz());
+                Volume tubeVolume(detName, tubeShape,
+                                    oddd.material(x_det_tub.materialStr()));
+                // tubeVolume.setVisAttributes(oddd, x_det.visStr());
+                envVolume = tubeVolume;
+            } else if (shapeName == "A") {
+                Tube tubeShape(shapeName, x_det_tub.rmin(), x_det_tub.rmax(),
+                                x_det_tub.dz());
+                Volume tubeVolume(shapeName, tubeShape,
+                                    oddd.material(x_det_tub.materialStr()));
+                tubeVolume.setVisAttributes(oddd, x_det.visStr());
+                wireAVolume = tubeVolume;
+            } else if (shapeName == "U") {
+
+            } else if (shapeName == "V") {
+
+            }
+        }
+
+    }
+
+
 
     // Place it in the mother
     Volume motherVolume = oddd.pickMotherVolume(driftChamberElement);
-    PlacedVolume placedTube = motherVolume.placeVolume(tubeVolume);
-    placedTube.addPhysVolID(detName, driftChamberElement.id());
-    driftChamberElement.setPlacement(placedTube);
+    PlacedVolume placedEnv = motherVolume.placeVolume(envVolume);
+    placedEnv.addPhysVolID(detName, driftChamberElement.id());
+    driftChamberElement.setPlacement(placedEnv);
 
     // Construct super layers
     std::cout << "START BUILDING SUPER LAYER" << std::endl;
@@ -135,6 +160,15 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                 for (int icell = 0; icell < dcsc.ncells_per_layer; ++icell) {
                     double phi = start_phi + icell*dcsc.delta_phi;
 
+                    double x = signal_wire_r*cos(phi);
+                    double y = signal_wire_r*sin(phi);
+
+                    dd4hep::Transform3D tr(dd4hep::Rotation3D(),
+                                           dd4hep::Position(x,y,0));
+                    dd4hep::PlacedVolume pv = envVolume.placeVolume(wireAVolume, tr);
+
+                    // debug only
+                    if (icell > 10) break;
                 }
 
             }

@@ -20,6 +20,9 @@
             <type_flags type="DetType_TRACKER" />
             <tubs name="DCSupportCylinder" rmin="dc_env_rmin" rmax="dc_env_rmax" dz="dc_env_length" material="CarbonFiber">
             </tubs>
+            <tubs name="A" rmin="0*mm" rmax="1*mm" dz="dc_env_length" material="CarbonFiber">
+            </tubs>
+
             <layers type="A" rmin="209*mm" rmax="290*mm" number="8">
             </layers>
             <layers type="U" rmin="290*mm" rmax="375*mm" number="6">
