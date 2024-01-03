@@ -17,6 +17,9 @@ struct DCSuperLaylerCalculator {
     const double rmin; // rmin of the superlayer
     const double rmax; // rmax of the superlayer
 
+    const double r_innermost_wire;
+    const double r_outermost_wire;
+
     // OUTPUT
     double cell_size;
 
@@ -27,14 +30,21 @@ struct DCSuperLaylerCalculator {
     std::vector<double> start_phi_vec; // start phi [nlayers]
     std::vector<double> signal_wire_r_vec; // signal wire r
 
-    DCSuperLaylerCalculator(int _id, const std::string& _type, int _n, double _rmin, double _rmax)
-    : superlayer_id(_id), type(_type), n(_n), rmin(_rmin), rmax(_rmax) {
+    std::vector<int> need_extra_field_wire_per_layer;
+
+    DCSuperLaylerCalculator(int _id, const std::string& _type, int _n, double _rmin, double _rmax, double _r_inner, double _r_outer)
+    : superlayer_id(_id), type(_type), n(_n), rmin(_rmin), rmax(_rmax), r_innermost_wire(_r_inner), r_outermost_wire(_r_outer) {
 
     }
 
     void calc() {
+        //                 cell
+        //               |<--->|<--->|<--->|<--->|
+        // ------------>|o--x--o--x--o--x--o--x--o|
+        //          innermost                 outermost
+        //
         // According to the rmin/rmax and n, calculate the size of cell (inner)
-        cell_size = (rmax-rmin) / n;
+        cell_size = (rmax-rmin - r_innermost_wire - r_outermost_wire) / n;
 
         // now, let decide the number of cells in each layer.
         // for simplicity, assume they have the same number. 
@@ -52,9 +62,16 @@ struct DCSuperLaylerCalculator {
             start_phi_vec.push_back(start_phi);
 
             // signal wire should at center in radial direction
-            double r = rmin + 0.5*cell_size + ilayer*cell_size;
+            double r = rmin + r_innermost_wire + 0.5*cell_size + ilayer*cell_size;
 
             signal_wire_r_vec.push_back(r);
+
+            // the outermost layer may be field wire
+            int need_extra_field = 0;
+            if (ilayer == n-1) {
+                need_extra_field = 1;
+            }
+            need_extra_field_wire_per_layer.push_back(need_extra_field);
         }
 
     }
@@ -103,6 +120,10 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
     Volume wireUFVolume;
     Volume wireVFVolume;
 
+    double wireAFradius = 0;
+    double wireUFradius = 0;
+    double wireVFradius = 0;
+
     if (x_det.hasChild(_U(tubs))) {
         for (xml_coll_t tub(xml, _U(tubs)); tub; ++tub) {
             xml_comp_t x_det_tub = tub;
@@ -120,10 +141,13 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                 wireVVolume = tubeVolume;
             } else if (shapeName == "AF") {
                 wireAFVolume = tubeVolume;
+                wireAFradius = x_det_tub.rmax();
             } else if (shapeName == "UF") {
                 wireUFVolume = tubeVolume;
+                wireUFradius = x_det_tub.rmax();
             } else if (shapeName == "VF") {
                 wireVFVolume = tubeVolume;
+                wireVFradius = x_det_tub.rmax();
             }
         }
 
@@ -146,37 +170,47 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
             superlay; ++superlay, ++superlayerNum) {
             xml_comp_t x_superlayer = superlay;
 
-            DCSuperLaylerCalculator dcsc(superlayerNum,
-                                         x_superlayer.typeStr(),
-                                         x_superlayer.number(),
-                                         x_superlayer.rmin(),
-                                         x_superlayer.rmax());
-            dcsc.calc();
-            dcsc.dump();
-
-            ncells += dcsc.ncells_superlayer;
+            std::string type = x_superlayer.typeStr();
 
             // Assume in one superlayer, same sense/field wires are used respectively.
             // select the sense wire and field wire
             Volume* signalVolume = nullptr;
             Volume* fieldVolume = nullptr;
-            if (dcsc.type == "A") {
+            double wire_radius = 0;
+            if (type == "A") {
                 signalVolume = &wireAVolume;
                 fieldVolume = &wireAFVolume;
-            } else if (dcsc.type == "U") {
+                wire_radius = wireAFradius;
+            } else if (type == "U") {
                 signalVolume = &wireUVolume;
                 fieldVolume = &wireUFVolume;
-            } else if (dcsc.type == "V") {
+                wire_radius = wireUFradius;
+            } else if (type == "V") {
                 signalVolume = &wireVVolume;
                 fieldVolume = &wireVFVolume;
+                wire_radius = wireVFradius;
             }
+
+            DCSuperLaylerCalculator dcsc(superlayerNum,
+                                         x_superlayer.typeStr(),
+                                         x_superlayer.number(),
+                                         x_superlayer.rmin(),
+                                         x_superlayer.rmax(),
+                                         wire_radius,
+                                         wire_radius);
+            dcsc.calc();
+            dcsc.dump();
+
+            ncells += dcsc.ncells_superlayer;
+
+
 
             // place the wires
             for (int ilayer = 0; ilayer < dcsc.n; ++ilayer) {
                 double start_phi = dcsc.start_phi_vec[ilayer];
                 double signal_wire_r = dcsc.signal_wire_r_vec[ilayer];
 
-                bool is_top_needed = false;
+                bool is_top_needed = dcsc.need_extra_field_wire_per_layer[ilayer];
 
 
                 for (int icell = 0; icell < dcsc.ncells_per_layer; ++icell) {
@@ -190,9 +224,9 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                     dd4hep::PlacedVolume pv = envVolume.placeVolume(*signalVolume, tr);
 
                     // x: sense; O: wire
-                    //            O   O    Top
+                    //            O   O    outermost
                     //            x   O    Middle
-                    //            O   O    Bottom
+                    //            O   O    innermost
                     //
                     double cell_size = dcsc.cell_size;
                     double delta_phi = dcsc.delta_phi;
@@ -215,8 +249,10 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                         dd4hep::PlacedVolume pvF = envVolume.placeVolume(*fieldVolume, trF);
                     }
 
+                    // 
                     // debug only
-                    if (icell > 10) break;
+                    // if (icell > 10) break;
+                    // if (phi>M_PI/2) break;
                 }
 
             }
