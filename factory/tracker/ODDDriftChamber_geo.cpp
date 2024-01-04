@@ -49,9 +49,11 @@ struct DCSuperLaylerCalculator {
         // now, let decide the number of cells in each layer.
         // for simplicity, assume they have the same number. 
 
-        double R = rmin;
-        delta_phi = cell_size / R;
+        double R = rmin + r_innermost_wire + 0.5*cell_size; // layer 0
+        delta_phi = 2*atan(0.5*cell_size / R);
         ncells_per_layer = 2*M_PI / delta_phi;
+        // then, calculate delta_phi again
+        delta_phi = 2*M_PI / ncells_per_layer;
         ncells_superlayer = ncells_per_layer*n;
 
         for (int ilayer = 0; ilayer < n; ++ilayer) {
@@ -207,6 +209,11 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
 
             // place the wires
             for (int ilayer = 0; ilayer < dcsc.n; ++ilayer) {
+                // debug only
+                // if (ilayer != 0) { 
+                //     break;
+                // }
+
                 double start_phi = dcsc.start_phi_vec[ilayer];
                 double signal_wire_r = dcsc.signal_wire_r_vec[ilayer];
 
@@ -216,8 +223,29 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                 for (int icell = 0; icell < dcsc.ncells_per_layer; ++icell) {
                     double phi = start_phi + icell*dcsc.delta_phi;
 
+                    // 
+                    // debug only
+                    // if (icell != 0) {
+                    //     break;
+                    // }
+                    // if (icell > 10) break;
+                    // if (phi>M_PI/2) break;
+                    // if (icell > 0.05*dcsc.ncells_per_layer &&
+                    //     icell < 0.95*dcsc.ncells_per_layer) {
+                    //     continue;
+                    // }
+
+                    // calculate the position of signal wire
                     double x = signal_wire_r*cos(phi);
                     double y = signal_wire_r*sin(phi);
+
+
+                    // std::cout << "- ilayer " << ilayer
+                    //           << " icell " << icell
+                    //           << " phi " << phi
+                    //           << " pos ( " << x << "," << y << ")"
+                    //           << std::endl;
+
 
                     dd4hep::Transform3D tr(dd4hep::Rotation3D(),
                                            dd4hep::Position(x,y,0));
@@ -247,12 +275,13 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                         dd4hep::Transform3D trF(dd4hep::Rotation3D(),
                                                 dd4hep::Position(xF,yF,0));
                         dd4hep::PlacedVolume pvF = envVolume.placeVolume(*fieldVolume, trF);
+                        // std::cout << "- ilayer " << ilayer
+                        //       << " icell " << icell
+                        //       << " phiF " << phiF[i]
+                        //       << " posF ( " << xF << "," << yF << ")"
+                        //       << std::endl;
                     }
 
-                    // 
-                    // debug only
-                    // if (icell > 10) break;
-                    // if (phi>M_PI/2) break;
                 }
 
             }
