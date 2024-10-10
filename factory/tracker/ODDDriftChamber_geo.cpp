@@ -2,6 +2,8 @@
 #include <tuple>
 #include <iostream>
 
+#include "ODDHelper.hpp"
+
 #include "DD4hep/DetFactoryHelper.h"
 #include "DD4hep/DetType.h"
 #include "DDRec/DetectorData.h"
@@ -103,13 +105,19 @@ struct DCSuperLaylerCalculator {
 
 static Ref_t create_element(Detector &oddd, xml_h xml,
                                 SensitiveDetector sens) {
-
+    std::cout<<__LINE__<<std::endl;	
+    //sens.setType("tracker");
+    std::cout<<__LINE__<<std::endl;
     xml_det_t x_det = xml;
-    std::string detName = x_det.nameStr();
-
+    std::string detName = x_det.nameStr();//the name is :DC
     // Make DetElement
     DetElement driftChamberElement(detName, x_det.id());
-
+    dd4hep::xml::setDetectorTypeFlag(xml,driftChamberElement);
+    driftChamberElement.setType("ODDDriftChamber");
+    //driftChamberElement.setType(x_det.type());
+    dd4hep::DetType dettype{driftChamberElement.typeFlag()};
+    if (dettype.is(dd4hep::DetType::TRACKER))
+    {std::cout<<"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"<<std::endl;}
     // Make Volume
     // - Env
     // - Sense Wire (A, U, V)
@@ -125,7 +133,11 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
     double wireAFradius = 0;
     double wireUFradius = 0;
     double wireVFradius = 0;
-
+    //*********************
+    double env_dz = 0;
+    Material air_material = 0; 
+    //*********************
+    
     if (x_det.hasChild(_U(tubs))) {
         for (xml_coll_t tub(xml, _U(tubs)); tub; ++tub) {
             xml_comp_t x_det_tub = tub;
@@ -133,9 +145,20 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
             Tube tubeShape(shapeName, x_det_tub.rmin(), x_det_tub.rmax(), x_det_tub.dz());
             Volume tubeVolume(shapeName, tubeShape, oddd.material(x_det_tub.materialStr()));
             tubeVolume.setVisAttributes(oddd, x_det_tub.visStr());
+	    if(x_det_tub.isSensitive())
+	    {
+	       sens.setType("tracker");
+	       tubeVolume.setSensitiveDetector(sens);
+	    }
+	    //*********************
+	    env_dz = x_det_tub.dz();
+	    air_material = oddd.material(x_det_tub.materialStr());
+	    //*********************
             if (shapeName == "DCSupportCylinder") {
                 envVolume = tubeVolume;
             } else if (shapeName == "A") {
+	        //sens.setType("wire_tracker");
+                //signalVolume->setSensitiveDetector(sens);	    
                 wireAVolume = tubeVolume;
             } else if (shapeName == "U") {
                 wireUVolume = tubeVolume;
@@ -160,8 +183,9 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
     // Place it in the mother
     Volume motherVolume = oddd.pickMotherVolume(driftChamberElement);
     PlacedVolume placedEnv = motherVolume.placeVolume(envVolume);
-    placedEnv.addPhysVolID(detName, driftChamberElement.id());
+    placedEnv.addPhysVolID("system", driftChamberElement.id());
     driftChamberElement.setPlacement(placedEnv);
+
 
     // Construct super layers
     std::cout << "START BUILDING SUPER LAYER" << std::endl;
@@ -173,7 +197,6 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
             xml_comp_t x_superlayer = superlay;
 
             std::string type = x_superlayer.typeStr();
-
             // Assume in one superlayer, same sense/field wires are used respectively.
             // select the sense wire and field wire
             Volume* signalVolume = nullptr;
@@ -182,6 +205,8 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
             if (type == "A") {
                 signalVolume = &wireAVolume;
                 fieldVolume = &wireAFVolume;
+                wire_radius = wireAFradius;
+                wire_radius = wireAFradius;
                 wire_radius = wireAFradius;
             } else if (type == "U") {
                 signalVolume = &wireUVolume;
@@ -204,22 +229,34 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
             dcsc.dump();
 
             ncells += dcsc.ncells_superlayer;
-
-
-
-            // place the wires
-            for (int ilayer = 0; ilayer < dcsc.n; ++ilayer) {
+            
+	    double cellsize = dcsc.cell_size; 
+            
+	   
+	    size_t ilayer = 0;
+	    if(x_superlayer.hasChild(_U(layer))) {
+              for (xml_coll_t lay(x_superlayer,_U(layer)); lay; ++lay, ++ilayer) {
                 // debug only
                 // if (ilayer != 0) { 
                 //     break;
                 // }
-
+                xml_comp_t x_layer = lay;
                 double start_phi = dcsc.start_phi_vec[ilayer];
                 double signal_wire_r = dcsc.signal_wire_r_vec[ilayer];
-
+             
                 bool is_top_needed = dcsc.need_extra_field_wire_per_layer[ilayer];
-
-
+                
+		//************************************
+		double layer_max = signal_wire_r+0.5*cellsize;
+		double layer_min = signal_wire_r-0.5*cellsize;
+                std::string layername = x_layer.nameStr();
+		//std::string layername = "DriftChamberlayer"+std::to_string(superlayerNum)+"_"+std::to_string(ilayer);
+		Volume layervolume(layername,Tube(layer_min,layer_max,env_dz),air_material); 
+		layervolume.setVisAttributes(oddd,"green");
+                DetElement layerelement(driftChamberElement,layername,ilayer);
+                //************************************** 
+                		
+               
                 for (int icell = 0; icell < dcsc.ncells_per_layer; ++icell) {
                     double phi = start_phi + icell*dcsc.delta_phi;
 
@@ -249,8 +286,17 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
 
                     dd4hep::Transform3D tr(dd4hep::Rotation3D(),
                                            dd4hep::Position(x,y,0));
-                    dd4hep::PlacedVolume pv = envVolume.placeVolume(*signalVolume, tr);
-
+		    dd4hep::PlacedVolume pv = layervolume.placeVolume(*signalVolume,tr);
+		    pv.addPhysVolID("singalwire",icell);
+		    //sens.setType("tracker");
+		    //signalVolume->setSensitiveDetector(sens);
+		    std::string wirename = std::to_string(icell);
+		    DetElement wire_element(layerelement,wirename,icell);
+	            wire_element.setPlacement(pv);
+		    auto &params = ODDHelper::ensureExtension
+			    <dd4hep::rec::VariantParameters>(wire_element);
+                    params.set<std::string>("axis_definitions","XYZ");  
+		    //************************************************************
                     // x: sense; O: wire
                     //            O   O    outermost
                     //            x   O    Middle
@@ -283,8 +329,23 @@ static Ref_t create_element(Detector &oddd, xml_h xml,
                     }
 
                 }
-
-            }
+		//*******************
+                PlacedVolume placedlayer = envVolume.placeVolume(layervolume);
+		placedlayer.addPhysVolID("layer",ilayer);
+		layerelement.setPlacement(placedlayer);
+		auto &layerParams =ODDHelper::ensureExtension<dd4hep::rec::VariantParameters>(layerelement);
+                layerParams.set<double>("envelope_r_min", 0.);
+                layerParams.set<double>("envelope_r_max", 0.);
+                layerParams.set<double>("envelope_z_min", 0.);
+                layerParams.set<double>("envelope_z_max", 0.);
+                // Set the number of passive surfaces to process
+                //if (nMaterialSurfaces > 0) {
+                 //  layerParams.set<bool>("passive_surface", true);
+                  // layerParams.set<int>("passive_surface_count", nMaterialSurfaces);
+                // }
+                //*******************
+              }
+	   }   
         }
     }
 

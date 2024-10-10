@@ -1,7 +1,11 @@
 <lccdd>
-
     <include ref="OpenDataPixels.xml"/>
-    <include ref="OpenDataDC.xml"/>
+    <!--include ref="OpenDataDC.xml"/-->
+   <readouts>
+    <readout name="DCReadout">
+      <id>system:4,layer:6,singalwire:8</id>
+    </readout>
+   </readouts>  
 
     <detectors>
         <detector id="ODD_Pixel_ID" name="Pixels" type="DD4hep_SubdetectorAssembly" vis="invisible">
@@ -11,13 +15,13 @@
             <composite name="PixelEndcapP"/>
         </detector>
         <detector id="ODD_PST_ID" name="PST" type="ODDCylinder" beampipe="false" vis="CarbonFiber">
-            <type_flags type="DetType_TRACKER" />
+            <type_flags type="DetType_TRACKER + DetType_BARREL" />
             <tubs name="PixelSupportCylinder" rmin="pst_rmin" rmax="pst_rmax" dz="pst_length" material="CarbonFiber">
                 <layer_material surface="representing" binning="binPhi,binZ" bins0="mat_pst_bPhi" bins1="mat_pst_bZ"/>
             </tubs>
         </detector>
-        <detector id="ODD_DC_ID" name="DC" type="ODDDriftChamber">
-            <type_flags type="DetType_TRACKER" />
+        <detector id="ODD_DC_ID" name="DC" type="ODDDriftChamber" readout="DCReadout">
+            <type_flags type="DetType_TRACKER + DetType_BARREL" />
             <tubs name="DCSupportCylinder" 
                   rmin="dc_env_rmin" rmax="dc_env_rmax" dz="dc_env_length" 
                   material="Air" vis="invisible">
@@ -25,15 +29,15 @@
             <!-- define the three types of sense wires -->
             <tubs name="A" 
                   rmin="0*mm" rmax="1*mm" dz="dc_env_length" 
-                  material="CarbonFiber">
+                  material="CarbonFiber" sensitive="true">
             </tubs>
             <tubs name="U" 
                   rmin="0*mm" rmax="1*mm" dz="dc_env_length" 
-                  material="CarbonFiber" vis="red">
+                  material="CarbonFiber" vis="red" sensitive="true">
             </tubs>
             <tubs name="V" 
                   rmin="0*mm" rmax="1*mm" dz="dc_env_length" 
-                  material="CarbonFiber" vis="blue">
+                  material="CarbonFiber" vis="blue" sensitive="true">
             </tubs>
             <!-- define the three types of field wires -->
             <tubs name="AF" 
@@ -48,34 +52,100 @@
                   rmin="0*mm" rmax="2*mm" dz="dc_env_length" 
                   material="CarbonFiber" vis="blue">
             </tubs>
-            <!-- superlayers -->
-            <layers id="0" type="A" rmin="209*mm" rmax="290*mm" number="8">
+	    <!-- superlayers -->
+	    <layers id="0" type="A" rmin="209*mm" rmax="290*mm" number="8">
+		    <layer id="0" name="DriftChamberlayer00" vis="green" >  </layer>
+		    <layer id="1" name="DriftChamberlayer01" vis="green">  </layer>
+		    <layer id="2" name="DriftChamberlayer02" vis="green">  </layer>
+		    <layer id="3" name="DriftChamberlayer03" vis="green">  </layer>
+		    <layer id="4" name="DriftChamberlayer04" vis="green">  </layer>
+		    <layer id="5" name="DriftChamberlayer05" vis="green">  </layer>
+		    <layer id="6" name="DriftChamberlayer06" vis="green">  </layer>
+		    <layer id="7" name="DriftChamberlayer07" vis="green">  </layer>	
             </layers>
-            <layers id="1" type="U" rmin="290*mm" rmax="375*mm" number="6">
+	    <layers id="1" type="U" rmin="290*mm" rmax="375*mm" number="6">
+		    <layer id="0" name="DriftChamberlayer10" vis="green">  </layer>
+		    <layer id="1" name="DriftChamberlayer11" vis="green">  </layer>
+		    <layer id="2" name="DriftChamberlayer12" vis="green">  </layer>
+		    <layer id="3" name="DriftChamberlayer13" vis="green">  </layer>
+		    <layer id="4" name="DriftChamberlayer14" vis="green">  </layer>
+		    <layer id="5" name="DriftChamberlayer15" vis="green">  </layer>
             </layers>
-            <layers id="2" type="A" rmin="375*mm" rmax="460*mm" number="6" >
+	    <layers id="2" type="A" rmin="375*mm" rmax="460*mm" number="6">
+		<layer id="0" name="DriftChamberlayer20" vis="green">  </layer>
+                <layer id="1" name="DriftChamberlayer21" vis="green">  </layer>
+                <layer id="2" name="DriftChamberlayer22" vis="green">  </layer>
+                <layer id="3" name="DriftChamberlayer23" vis="green">  </layer>
+                <layer id="4" name="DriftChamberlayer24" vis="green">  </layer>
+                <layer id="5" name="DriftChamberlayer25" vis="green">  </layer>
             </layers>
-            <layers id="3" type="V" rmin="460*mm" rmax="545*mm" number="6">
+	    <layers id="3" type="V" rmin="460*mm" rmax="545*mm" number="6">
+		<layer id="0" name="DriftChamberlayer30" vis="green">  </layer>
+                <layer id="1" name="DriftChamberlayer31" vis="green">  </layer>
+                <layer id="2" name="DriftChamberlayer32" vis="green">  </layer>
+                <layer id="3" name="DriftChamberlayer33" vis="green">  </layer>
+                <layer id="4" name="DriftChamberlayer34" vis="green">  </layer>
+                <layer id="5" name="DriftChamberlayer35" vis="green">  </layer>  
             </layers>
-            <layers id="4" type="A" rmin="545*mm" rmax="641*mm" number="6">
+	    <layers id="4" type="A" rmin="545*mm" rmax="641*mm" number="6">
+		<layer id="0" name="DriftChamberlayer40" vis="green">  </layer>
+                <layer id="1" name="DriftChamberlayer41" vis="green">  </layer>
+                <layer id="2" name="DriftChamberlayer42" vis="green">  </layer>
+                <layer id="3" name="DriftChamberlayer43" vis="green">  </layer>
+                <layer id="4" name="DriftChamberlayer44" vis="green">  </layer>
+                <layer id="5" name="DriftChamberlayer45" vis="green">  </layer>  
             </layers>
             <layers id="5" type="U" rmin="641*mm" rmax="737*mm" number="6">
+	        <layer id="0" name="DriftChamberlayer50" vis="green" >  </layer>
+                <layer id="1" name="DriftChamberlayer51" vis="green">  </layer>
+                <layer id="2" name="DriftChamberlayer52" vis="green">  </layer>
+                <layer id="3" name="DriftChamberlayer53" vis="green">  </layer>
+                <layer id="4" name="DriftChamberlayer54" vis="green">  </layer>
+                <layer id="5" name="DriftChamberlayer55" vis="green">  </layer>
             </layers>
             <layers id="6" type="A" rmin="737*mm" rmax="833*mm" number="6">
+	          <layer id="0" name="DriftChamberlayer60" vis="green" >  </layer>
+                  <layer id="1" name="DriftChamberlayer61" vis="green">  </layer>
+                  <layer id="2" name="DriftChamberlayer62" vis="green">  </layer>
+                  <layer id="3" name="DriftChamberlayer63" vis="green">  </layer>
+                  <layer id="4" name="DriftChamberlayer64" vis="green">  </layer>
+                  <layer id="5" name="DriftChamberlayer65" vis="green">  </layer>
             </layers>
-            <layers id="7" type="V" rmin="833*mm" rmax="930*mm" number="6">
+	    <layers id="7" type="V" rmin="833*mm" rmax="930*mm" number="6">
+	          <layer id="0" name="DriftChamberlayer70" vis="green" >  </layer>
+                  <layer id="1" name="DriftChamberlayer71" vis="green">  </layer>
+                  <layer id="2" name="DriftChamberlayer72" vis="green">  </layer>
+                  <layer id="3" name="DriftChamberlayer73" vis="green">  </layer>
+                  <layer id="4" name="DriftChamberlayer74" vis="green">  </layer>
+                  <layer id="5" name="DriftChamberlayer75" vis="green">  </layer>
             </layers>
-            <layers id="8" type="A" rmin="930*mm" rmax="1032*mm" number="6">
+		  <layers id="8" type="A" rmin="930*mm" rmax="1032*mm" number="6">
+                  <layer id="0" name="DriftChamberlayer80" vis="green" >  </layer>
+                  <layer id="1" name="DriftChamberlayer81" vis="green">  </layer>
+                  <layer id="2" name="DriftChamberlayer82" vis="green">  </layer>
+                  <layer id="3" name="DriftChamberlayer83" vis="green">  </layer>
+                  <layer id="4" name="DriftChamberlayer84" vis="green">  </layer>
+                  <layer id="5" name="DriftChamberlayer85" vis="green">  </layer>
             </layers>
             <layers id="9" type="A" rmin="1032*mm" rmax="1135*mm" number="6">
-            </layers>
+	          <layer id="0" name="DriftChamberlayer90" vis="green" >  </layer>
+                  <layer id="1" name="DriftChamberlayer91" vis="green">  </layer>
+                  <layer id="2" name="DriftChamberlayer92" vis="green">  </layer>
+                  <layer id="3" name="DriftChamberlayer93" vis="green">  </layer>
+                  <layer id="4" name="DriftChamberlayer94" vis="green">  </layer>
+                  <layer id="5" name="DriftChamberlayer95" vis="green">  </layer>
+	    </layers>
         </detector>
     </detectors>
   <plugins>
     <plugin name="DD4hep_ParametersPlugin">
       <argument value="PST"/>
       <argument value="passive_layer: bool = true"/>
-    </plugin>	
+    </plugin>
+    <plugin name="DD4hep_ParametersPlugin">
+      <argument value="DC"/>
+      <argument value="layer_pattern=DriftChamberlayer\d"/>
+    </plugin>
   </plugins>
 
 </lccdd>

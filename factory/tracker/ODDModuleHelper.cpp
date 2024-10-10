@@ -73,7 +73,9 @@ std::pair<Assembly, DetElement> ODDModuleHelper::assembleTrapezoidalModule(
       moduleAssembly.placeVolume(
           pipeVolume,
           Position(x_pipe.x_offset(), x_pipe.y_offset(), x_pipe.z_offset()));
-    }
+    }                                                                       
+
+
 
     // Place the component
     double stereoAlpha = x_comp.alpha();

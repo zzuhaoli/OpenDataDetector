@@ -161,7 +161,7 @@ static Ref_t create_element(Detector &oddd, xml_h xml, SensitiveDetector sens) {
         oddd.air());
     // Visualization
     layerVolume.setVisAttributes(oddd, x_layer.visStr());
-
+    
     // The DetElement tree, keep it flat
     DetElement layerElement(barrelDetector, x_layer.nameStr(), layerNum);
 

@@ -1,3 +1,13 @@
 <lccdd>
-
+ <plugins>
+    <plugin name="DD4hep_ParametersPlugin">
+      <argument value="PST"/>
+      <argument value="passive_layer: bool = true"/>
+    </plugin>
+    <plugin name="DD4hep_ParametersPlugin">
+      <argument value="DriftChamberlayer"/>
+      <argument value="layer_pattern=DriftChamberlayer\d"/>
+    </plugin>
+  </plugins>
+	
 </lccdd>
